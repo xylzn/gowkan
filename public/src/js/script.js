@@ -84,7 +84,31 @@ class Carousel {
             if (!isDragging) return;
             const currentX = e.touches[0].clientX;
             const diff = currentX - startX;
-            this.track.style.transform = `translateX(${currentTranslate + diff}px)`;
+            
+            // Add resistance at boundaries
+            let move = currentTranslate + diff;
+            const maxIndex = this.isMobile ? this.items.length - 1 : Math.max(0, this.items.length - 3);
+            
+            const gap = 24;
+            const itemWidth = this.items[0].offsetWidth;
+            const containerWidth = this.container.offsetWidth;
+            
+            let minOffset, maxOffset;
+            if (this.isMobile) {
+                maxOffset = (containerWidth - itemWidth) / 2;
+                minOffset = maxOffset - (maxIndex * (itemWidth + gap));
+            } else {
+                maxOffset = 0;
+                minOffset = -(maxIndex * (itemWidth + gap));
+            }
+
+            if (move > maxOffset) {
+                move = maxOffset + (move - maxOffset) * 0.3; // Resistance
+            } else if (move < minOffset) {
+                move = minOffset + (move - minOffset) * 0.3; // Resistance
+            }
+
+            this.track.style.transform = `translateX(${move}px)`;
         }, { passive: true });
 
         this.track.addEventListener('touchend', e => {
@@ -121,7 +145,17 @@ class Carousel {
 
         const gap = 24;
         const itemWidth = this.items[0].offsetWidth;
-        const offset = -this.currentIndex * (itemWidth + gap);
+        const containerWidth = this.container.offsetWidth;
+        
+        // Centering for mobile
+        let offset;
+        if (this.isMobile) {
+            // Center the current item
+            offset = (containerWidth - itemWidth) / 2 - (this.currentIndex * (itemWidth + gap));
+        } else {
+            // Normal desktop logic
+            offset = -this.currentIndex * (itemWidth + gap);
+        }
         
         this.track.style.transform = `translateX(${offset}px)`;
 
