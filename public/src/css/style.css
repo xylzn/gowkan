@@ -54,8 +54,8 @@
 .carousel-wrapper {
     overflow: hidden;
     width: 100%;
-    margin: 0 -20px; /* Pull back to edge */
-    padding: 0 20px; /* Give room for shadows on edges */
+    margin: 0; 
+    padding: 0; 
 }
 
 .carousel-track {
@@ -66,11 +66,11 @@
 }
 
 .carousel-item {
-    flex: 0 0 85%; /* Mobile: show partial next/prev items */
+    flex: 0 0 92%; /* Mobile: larger item dimension */
     transform-style: preserve-3d;
     transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 0.3; /* More dimmed for inactive */
-    transform: scale(0.9) translateZ(-50px);
+    transform: scale(0.95) translateZ(-50px);
 }
 
 @media (min-width: 768px) {
@@ -81,38 +81,52 @@
 
 /* Gallery Item Enhancements */
 .gallery-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .gallery-item:hover {
-    border: 1px solid rgba(var(--primary-rgb), 0.5);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(var(--primary-rgb), 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    transform: translateY(-5px);
 }
 
 /* Package Enhancements */
 .package-card {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .package-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
+    inset: -1px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.5;
 }
 
-.package-card:hover::before {
-    opacity: 1;
+.package-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5);
 }
 
 .package-card-premium {
-    border: 1px solid rgba(var(--primary-rgb), 0.3) !important;
-    background: rgba(var(--primary-rgb), 0.05) !important;
+    border: 2px solid rgba(var(--primary-rgb), 0.4) !important;
+    background: linear-gradient(145deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.02)) !important;
+}
+
+.package-card-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 40px rgba(var(--primary-rgb), 0.1);
+    pointer-events: none;
 }
 
 /* Corrected Active State for all screen sizes */
