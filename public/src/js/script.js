@@ -10,7 +10,35 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Refactored Carousel Logic to fix scrolling bugs
+// Mobile Sidebar Logic
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const closeSidebarBtn = document.getElementById('close-sidebar');
+const mobileSidebar = document.getElementById('mobile-sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+const toggleSidebar = (show) => {
+    if (show) {
+        mobileSidebar.classList.remove('translate-x-full');
+        mobileSidebar.classList.add('translate-x-0');
+        sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        sidebarOverlay.classList.add('opacity-100', 'pointer-events-auto');
+        document.body.style.overflow = 'hidden';
+    } else {
+        mobileSidebar.classList.remove('translate-x-0');
+        mobileSidebar.classList.add('translate-x-full');
+        sidebarOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+        sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+        document.body.style.overflow = '';
+    }
+};
+
+mobileMenuBtn?.addEventListener('click', () => toggleSidebar(true));
+closeSidebarBtn?.addEventListener('click', () => toggleSidebar(false));
+sidebarOverlay?.addEventListener('click', () => toggleSidebar(false));
+sidebarLinks.forEach(link => link.addEventListener('click', () => toggleSidebar(false)));
+
+// Refactored Carousel Logic
 class Carousel {
     constructor(id, options = {}) {
         this.container = document.getElementById(id);
@@ -21,43 +49,47 @@ class Carousel {
         this.nextBtn = document.getElementById(`${id.split('-')[0]}-next`);
         this.prevBtn = document.getElementById(`${id.split('-')[0]}-prev`);
         
-        this.currentIndex = options.startIndex || 0;
         this.isMobile = window.innerWidth < 768;
+        this.currentIndex = options.startIndex !== undefined ? options.startIndex : 0;
+        
+        // Specific start index for packages on mobile
+        if (this.isMobile && id === 'packages-carousel') {
+            this.currentIndex = 1;
+        }
         
         this.init();
     }
 
     init() {
-        this.update(true); // Initial update without transition for starting index
+        this.update(true);
         
-        if (this.nextBtn) {
-            this.nextBtn.addEventListener('click', () => this.next());
-            this.prevBtn.addEventListener('click', () => this.prev());
-        }
+        this.nextBtn?.addEventListener('click', () => this.next());
+        this.prevBtn?.addEventListener('click', () => this.prev());
 
-        // Improved Touch support for mobile
+        // Touch support
         let startX = 0;
+        let currentTranslate = 0;
         let isDragging = false;
 
         this.track.addEventListener('touchstart', e => {
             startX = e.touches[0].clientX;
             isDragging = true;
             this.track.style.transition = 'none';
-        });
+            const style = window.getComputedStyle(this.track);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            currentTranslate = matrix.m41;
+        }, { passive: true });
 
         this.track.addEventListener('touchmove', e => {
             if (!isDragging) return;
             const currentX = e.touches[0].clientX;
             const diff = currentX - startX;
-            const itemWidth = this.items[0].offsetWidth + 24;
-            const baseOffset = -this.currentIndex * itemWidth;
-            this.track.style.transform = `translateX(${baseOffset + diff}px)`;
-        });
+            this.track.style.transform = `translateX(${currentTranslate + diff}px)`;
+        }, { passive: true });
 
         this.track.addEventListener('touchend', e => {
             if (!isDragging) return;
             isDragging = false;
-            this.track.style.transition = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
             const endX = e.changedTouches[0].clientX;
             const diff = startX - endX;
             
@@ -73,9 +105,13 @@ class Carousel {
             const wasMobile = this.isMobile;
             this.isMobile = window.innerWidth < 768;
             if (wasMobile !== this.isMobile) {
-                this.currentIndex = this.isMobile && this.container.id === 'packages-carousel' ? 1 : 0;
+                if (this.isMobile && this.container.id === 'packages-carousel') {
+                    this.currentIndex = 1;
+                } else {
+                    this.currentIndex = 0;
+                }
             }
-            this.update();
+            this.update(true);
         });
     }
 
@@ -83,37 +119,35 @@ class Carousel {
         if (immediate) this.track.style.transition = 'none';
         else this.track.style.transition = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
 
-        const itemWidth = this.items[0].offsetWidth + 24;
-        const offset = -this.currentIndex * itemWidth;
+        const gap = 24;
+        const itemWidth = this.items[0].offsetWidth;
+        const offset = -this.currentIndex * (itemWidth + gap);
         
-        // Fix: Desktop should also translate the track
         this.track.style.transform = `translateX(${offset}px)`;
 
-        // 3D Effect & Active State
+        // Active State Logic
         this.items.forEach((item, index) => {
-            item.classList.remove('active');
+            item.classList.remove('active', 'is-visible');
+            
             if (index === this.currentIndex) {
                 item.classList.add('active');
-            } else if (index > this.currentIndex && index < this.currentIndex + (this.isMobile ? 1 : 3)) {
-                // For desktop, items visible in the viewport should also look active or semi-active
-                item.style.opacity = '1';
-                item.style.transform = 'scale(1) translateZ(0)';
-            } else {
-                item.style.opacity = '0.4';
-                item.style.transform = 'scale(0.9) translateZ(-50px)';
+            }
+            
+            // For desktop, show items in viewport as visible (not dimmed)
+            if (!this.isMobile) {
+                if (index >= this.currentIndex && index < this.currentIndex + 3) {
+                    item.classList.add('is-visible');
+                }
             }
         });
 
-        // Specific handling for active class in 3D effect
-        this.items[this.currentIndex].classList.add('active');
-
-        // Hide/Show arrows
+        // Button States
         if (this.prevBtn) {
             this.prevBtn.style.opacity = this.currentIndex === 0 ? '0.2' : '1';
             this.prevBtn.style.pointerEvents = this.currentIndex === 0 ? 'none' : 'auto';
         }
         if (this.nextBtn) {
-            const maxIndex = this.isMobile ? this.items.length - 1 : this.items.length - 3;
+            const maxIndex = this.isMobile ? this.items.length - 1 : Math.max(0, this.items.length - 3);
             this.nextBtn.style.opacity = this.currentIndex >= maxIndex ? '0.2' : '1';
             this.nextBtn.style.pointerEvents = this.currentIndex >= maxIndex ? 'none' : 'auto';
         }
@@ -126,7 +160,7 @@ class Carousel {
     }
 
     next() {
-        const maxIndex = this.isMobile ? this.items.length - 1 : this.items.length - 3;
+        const maxIndex = this.isMobile ? this.items.length - 1 : Math.max(0, this.items.length - 3);
         if (this.currentIndex < maxIndex) {
             this.currentIndex++;
             this.update();
@@ -141,7 +175,7 @@ class Carousel {
     }
 }
 
-// Modal functionality for Gallery (Dark Theme)
+// Modal functionality for Gallery
 const createModal = () => {
     const modal = document.createElement('div');
     modal.id = 'gallery-modal';
@@ -196,7 +230,7 @@ const createModal = () => {
     return modal;
 };
 
-// Smooth Scroll for Anchor Links
+// Smooth Scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -214,7 +248,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Reveal animations on scroll
+// Reveal animations
 const revealElements = () => {
     const reveals = document.querySelectorAll('.reveal');
     reveals.forEach(el => {
@@ -231,13 +265,9 @@ const revealElements = () => {
 window.addEventListener('scroll', revealElements);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Carousels
-    new Carousel('gallery-carousel', { startIndex: 0 });
-    new Carousel('blog-carousel', { startIndex: 0 });
-    
-    if (window.innerWidth < 768) {
-        new Carousel('packages-carousel', { startIndex: 1 }); // Start from 2nd package on mobile
-    }
+    new Carousel('gallery-carousel');
+    new Carousel('blog-carousel');
+    new Carousel('packages-carousel');
 
     const modal = createModal();
     const modalImg = modal.querySelector('#modal-img');
@@ -248,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn.innerText.includes('Lihat Demo')) {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const card = btn.closest('.glass-card');
+                const card = btn.closest('.carousel-item');
                 const img = card.querySelector('img').src;
                 const title = card.querySelector('h3').innerText;
                 const tag = card.querySelector('span').innerText;
@@ -264,5 +294,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    revealElements(); // Initial check
+    revealElements();
 });
