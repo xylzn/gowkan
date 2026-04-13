@@ -303,30 +303,95 @@ document.addEventListener('DOMContentLoaded', () => {
     new Carousel('blog-carousel');
     new Carousel('packages-carousel');
 
-    const modal = createModal();
-    const modalImg = modal.querySelector('#modal-img');
-    const modalTag = modal.querySelector('#modal-tag');
-    const modalTitle = modal.querySelector('#modal-title');
+    const modal = document.getElementById('preview-modal');
+    const modalImage = document.getElementById('modal-image');
+    const modalCategory = document.getElementById('modal-category');
+    const modalTitle = document.getElementById('modal-title');
+    const modalHeadline = document.getElementById('modal-headline');
+    const modalFocus = document.getElementById('modal-focus');
+    const modalAdvantages = document.getElementById('modal-advantages');
+    const closeModal = document.getElementById('close-modal');
+    const modalBg = document.getElementById('modal-bg');
 
-    document.querySelectorAll('.carousel-item a').forEach(btn => {
-        if (btn.innerText.includes('Lihat Demo')) {
+    if (modal) {
+        const hideModal = () => {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.add('scale-90');
+            document.body.style.overflow = '';
+        };
+
+        closeModal?.addEventListener('click', hideModal);
+        modalBg?.addEventListener('click', hideModal);
+
+        document.querySelectorAll('.carousel-item a[href="#"]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const card = btn.closest('.carousel-item');
-                const img = card.querySelector('img').src;
-                const title = card.querySelector('h3').innerText;
-                const tag = card.querySelector('span').innerText;
+                const sector = card.querySelector('span').textContent.trim();
+                const data = window.GOWKAN_MODAL_DATA[sector];
 
-                modalImg.src = img;
-                modalTitle.innerText = title;
-                modalTag.innerText = tag;
+                if (data) {
+                    modalImage.src = data.image;
+                    modalCategory.textContent = data.category;
+                    modalTitle.textContent = data.title;
+                    modalHeadline.textContent = `"${data.headline}"`;
+                    modalFocus.textContent = data.focus;
+                    
+                    // Clear and fill advantages
+                    modalAdvantages.innerHTML = '';
+                    data.advantages.forEach(adv => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-start gap-4 group/item';
+                        li.innerHTML = `
+                            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0 group-hover/item:bg-primary group-hover/item:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h6 class="text-sm font-black text-white mb-1">${adv.title}</h6>
+                                <p class="text-xs text-white/40 leading-relaxed font-medium">${adv.desc}</p>
+                            </div>
+                        `;
+                        modalAdvantages.appendChild(li);
+                    });
 
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('.glass-card').classList.remove('scale-90');
-                document.body.style.overflow = 'hidden';
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.querySelector('.glass-card').classList.remove('scale-90');
+                    document.body.style.overflow = 'hidden';
+                }
             });
-        }
-    });
+        });
+    }
 
     revealElements();
+
+    // Contact Form & WhatsApp Integration
+    const contactForm = document.getElementById('gowkan-contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const companyName = document.getElementById('company-name').value;
+            const companyEmail = document.getElementById('company-email').value;
+            const businessSector = document.getElementById('business-sector').value;
+            const selectedPackage = document.getElementById('selected-package').value;
+            const demoReference = document.getElementById('demo-reference').value;
+
+            const whatsappNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Anda
+            
+            const message = `Halo Admin Gowkan, saya dari perusahaan *${companyName}*.\n\n` +
+                            `Saya ingin membuat website dengan rincian sebagai berikut:\n` +
+                            `• *Email:* ${companyEmail}\n` +
+                            `• *Sektor Usaha:* ${businessSector}\n` +
+                            `• *Paket Investasi:* ${selectedPackage}\n` +
+                            `• *Referensi Demo:* ${demoReference}\n\n` +
+                            `Mohon informasinya lebih lanjut. Terima kasih!`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        });
+    }
 });
