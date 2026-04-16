@@ -1,0 +1,273 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import Button from '../../components/Button.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+
+// 1. WAJIB: Biar getStaticPaths jalan di Vercel
+export const prerender = true;
+
+export async function getStaticPaths() {
+    const posts = await getCollection('blog');
+    return posts.map((post) => {
+        // KUNCI: Kita buang ekstensi .md atau .mdx biar URL-nya cantik
+        const cleanSlug = post.id.replace(/\.[^/.]+$/, "");
+        
+        return {
+            params: { slug: cleanSlug }, 
+            props: { post },           
+        };
+    });
+}
+
+interface Props {
+    post: CollectionEntry<'blog'>;
+}
+
+// 2. Ambil props (PASTIKAN CUMA SATU BARIS, JANGAN DOUBLE!)
+const { post } = Astro.props;
+
+// 3. Proteksi biar gak crash kalau post gak ketemu
+if (!post) {
+    return Astro.redirect('/404');
+}
+
+const { Content, headings } = await render(post);
+
+// Logika Reading Time & Breadcrumbs
+const wordsPerMinute = 200;
+const noOfWords = post.body ? post.body.split(/\s+/g).length : 0;
+const minutes = Math.ceil(noOfWords / wordsPerMinute) || 1;
+const readTime = `${minutes} min baca`;
+
+const breadcrumbItems = [
+  { label: 'Beranda', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: post.data.title },
+];
+---
+
+<MainLayout 
+    title={`${post.data.title} | Gowkan Blog`}
+    description={post.data.description}
+    image={post.data.heroImage}
+>
+	<Navbar />
+    
+    <!-- UX: Scroll Progress Bar -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-1.5 bg-gradient-to-r from-primary via-secondary to-accent z-[100] w-0 transition-all duration-75"></div>
+
+	<main class="pt-32 pb-24 px-6 min-h-screen relative font-inter overflow-x-hidden">
+        <!-- Aesthetic Background Decoration -->
+        <div class="fixed inset-0 -z-10 pointer-events-none opacity-20">
+            <div class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/20 blur-[150px] rounded-full"></div>
+            <div class="absolute bottom-[10%] left-[-10%] w-[500px] h-[500px] bg-secondary/10 blur-[120px] rounded-full"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section (Full Width) -->
+            <header class="mb-16 reveal">
+                <Breadcrumbs items={breadcrumbItems} />
+                
+                <div class="flex flex-wrap items-center gap-4 mb-8">
+                    <span class="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-black uppercase tracking-tighter shadow-lg shadow-primary/5">
+                        {post.data.category}
+                    </span>
+                    <span class="text-white/10 text-xl font-thin">|</span>
+                    <div class="flex items-center gap-2 text-white/40 text-[11px] font-bold uppercase tracking-widest">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {readTime}
+                    </div>
+                    <span class="text-white/10 text-xl font-thin">|</span>
+                    <time datetime={post.data.pubDate.toISOString()} class="text-white/40 text-[11px] font-bold uppercase tracking-widest">
+                        {post.data.pubDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </time>
+                </div>
+                
+                <h1 class="text-4xl md:text-7xl font-black mb-10 leading-[1.05] text-white tracking-tighter max-w-4xl">
+                    {post.data.title}
+                </h1>
+
+                <!-- Featured Image -->
+                {post.data.heroImage && (
+                    <div class="relative aspect-[21/9] rounded-[2.5rem] overflow-hidden mb-20 shadow-2xl border border-white/5 reveal group">
+                        <img 
+                            src={post.data.heroImage} 
+                            alt={post.data.title} 
+                            class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000" 
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark/60 via-transparent to-transparent"></div>
+                    </div>
+                )}
+            </header>
+
+            <!-- Layout: 2-Columns (Main Content + Sidebar) -->
+            <div class="flex flex-col lg:flex-row gap-16 xl:gap-24 items-start">
+                
+                <!-- MAIN CONTENT (Max 800px) -->
+                <article class="w-full lg:max-w-[800px] flex-grow">
+                    <!-- Author Mini Profile -->
+                    <div class="flex items-center gap-5 mb-12 p-6 rounded-3xl bg-white/[0.03] border border-white/5 backdrop-blur-sm reveal">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-lg font-black shadow-lg shadow-primary/20">GK</div>
+                        <div class="flex flex-col">
+                            <span class="text-white font-black text-lg">Tim Gowkan</span>
+                            <span class="text-white/40 text-sm font-medium">Digital Solution Expert & Writer</span>
+                        </div>
+                    </div>
+
+                    <!-- Article Content (Typography Optimized) -->
+                    <div class="prose prose-invert max-w-none 
+                        prose-p:text-[#cbd5e1] prose-p:leading-[1.9] prose-p:text-xl prose-p:mb-10
+                        prose-headings:text-white prose-headings:font-black prose-headings:tracking-tight
+                        prose-h2:text-4xl prose-h2:mt-20 prose-h2:mb-8 prose-h2:scroll-mt-32
+                        prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:scroll-mt-32
+                        prose-strong:text-white prose-strong:font-extrabold
+                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-white/5 prose-blockquote:py-4 prose-blockquote:px-10 prose-blockquote:rounded-r-[2rem] prose-blockquote:italic prose-blockquote:text-white/90 prose-blockquote:text-2xl
+                        prose-code:bg-black/40 prose-code:text-accent prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+                        prose-pre:bg-black/60 prose-pre:border prose-pre:border-white/5 prose-pre:rounded-3xl prose-pre:p-8
+                        prose-img:rounded-[2.5rem] prose-img:shadow-2xl prose-img:border prose-img:border-white/5
+                        prose-li:text-lg prose-li:text-white/70 prose-li:mb-4
+                        reveal
+                    ">
+                        <Content />
+                    </div>
+
+                    <!-- CALL TO ACTION (CTA) -->
+                    <footer class="mt-32 reveal">
+                        <div class="relative p-10 md:p-16 rounded-[3rem] bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 overflow-hidden group">
+                            <!-- Glow Decor -->
+                            <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 blur-[100px] rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                            
+                            <div class="relative z-10 text-center">
+                                <div class="inline-flex p-4 bg-primary/10 rounded-2xl text-primary mb-8 animate-bounce">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-3xl md:text-4xl font-black mb-6 text-white tracking-tight">Ingin Website <span class="text-primary italic">SEO-Ready</span> Seperti Ini?</h3>
+                                <p class="text-[#94a3b8] mb-12 max-w-lg mx-auto text-lg leading-relaxed font-medium">
+                                    Tim Gowkan siap membantu bisnis Anda naik kelas dengan website berteknologi tinggi, super cepat, dan mudah ditemukan di Google.
+                                </p>
+                                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                                    <Button href="/#contact" variant="primary" class="px-10 py-5 rounded-2xl shadow-xl shadow-primary/20">Konsultasi Gratis Sekarang</Button>
+                                    <Button href="/#gallery" variant="glass" class="px-10 py-5 rounded-2xl">Lihat Portofolio</Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-20 text-center">
+                            <a href="/blog" class="text-sm font-black text-white/20 hover:text-primary tracking-widest transition-colors uppercase">
+                                Terima kasih telah membaca.
+                            </a>
+                        </div>
+                    </footer>
+                </article>
+
+                <!-- SIDEBAR: Table of Contents (Sticky) -->
+                <aside class="hidden lg:block w-[300px] flex-shrink-0">
+                    <TableOfContents headings={headings} />
+                </aside>
+            </div>
+        </div>
+	</main>
+	<Footer />
+
+    <!-- Mobile TOC Floating Button / Menu (Optional) -->
+    <div class="lg:hidden fixed bottom-8 right-8 z-[90]">
+        <button id="mobile-toc-trigger" class="w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Mobile TOC Drawer -->
+    <div id="mobile-toc-drawer" class="lg:hidden fixed inset-0 z-[100] pointer-events-none opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-dark/90 backdrop-blur-sm pointer-events-auto" id="drawer-overlay"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white/[0.03] border-t border-white/10 rounded-t-[2.5rem] p-10 transform translate-y-full transition-transform duration-300 pointer-events-auto" id="drawer-content">
+            <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-10"></div>
+            <TableOfContents headings={headings} />
+        </div>
+    </div>
+
+    <script>
+        // UX: Scroll Progress Bar Logic
+        const progressBar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            if (progressBar) {
+                progressBar.style.width = scrolled + "%";
+            }
+        });
+
+        // Mobile TOC Drawer Logic
+        const trigger = document.getElementById('mobile-toc-trigger');
+        const drawer = document.getElementById('mobile-toc-drawer');
+        const drawerContent = document.getElementById('drawer-content');
+        const overlay = document.getElementById('drawer-overlay');
+
+        function openDrawer() {
+            drawer?.classList.remove('pointer-events-none', 'opacity-0');
+            drawerContent?.classList.remove('translate-y-full');
+        }
+
+        function closeDrawer() {
+            drawer?.classList.add('opacity-0');
+            drawerContent?.classList.add('translate-y-full');
+            setTimeout(() => {
+                drawer?.classList.add('pointer-events-none');
+            }, 300);
+        }
+
+        trigger?.addEventListener('click', openDrawer);
+        overlay?.addEventListener('click', closeDrawer);
+
+        // Close drawer when link is clicked
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', closeDrawer);
+        });
+
+        // Reveal Animation Logic
+        const revealObserverOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, revealObserverOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    </script>
+</MainLayout>
+
+<style is:global>
+    /* Premium Font Styling */
+    .font-inter {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Animation for reveal items */
+    .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>

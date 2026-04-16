@@ -1,0 +1,41 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Why from '../components/Why.astro';
+import Blog from '../components/Blog.astro';
+import About from '../components/About.astro';
+import Gallery from '../components/Gallery.astro';
+import Packages from '../components/Packages.astro';
+import Process from '../components/Process.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+import PreviewModal from '../components/PreviewModal.astro';
+---
+
+<MainLayout>
+	<Navbar />
+	<main>
+		<Hero />
+		<Why />
+		<Blog />
+		<About />
+		<Gallery />
+		<Packages />
+		<Process />
+		<Contact />
+	</main>
+	<Footer />
+	<PreviewModal />
+</MainLayout>
+
+<script>
+	import { Carousel } from '../scripts/carousel';
+
+	document.addEventListener('DOMContentLoaded', () => {
+		new Carousel('gallery-carousel');
+		new Carousel('blog-carousel');
+		new Carousel('packages-carousel');
+	});
+</script>

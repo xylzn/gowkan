@@ -1,0 +1,104 @@
+---
+import Button from './Button.astro';
+
+const packages = [
+    {
+        name: "Paket GOW-KILAT",
+        subtitle: "(Identitas Digital)",
+        price: "Rp 1.500.000",
+        desc: "“Papan Nama Digital agar bisnis Anda resmi diakui internet.”",
+        color: "text-[#ec4899]",
+        bgColor: "bg-[#ec4899]/10",
+        hoverBorder: "hover:border-[#ec4899]/50",
+        features: [
+            "Website Profil 1 Halaman (One-Page)",
+            "Sistem Anti-Lemot (Akses Secepat Kilat)",
+            "Gratis Subdomain .gowkan.com",
+            "Desain Responsif (Rapi di HP & Laptop)"
+        ]
+    },
+    {
+        name: "Paket GOW-BRANDING",
+        subtitle: "(Kredibilitas Bisnis)",
+        price: "Rp 2.500.000",
+        desc: "“Tampil layaknya perusahaan besar & menangkan kepercayaan pasar.”",
+        color: "text-[#6366f1]",
+        bgColor: "bg-[#6366f1]/10",
+        hoverBorder: "hover:border-[#6366f1]/50",
+        popular: true,
+        features: [
+            "Gratis Nama Domain (.com) Thn Pertama",
+            "Copywriting Penjualan (Kami Susunkan)",
+            "Galeri Portofolio (Hingga 15 Foto)",
+            "Optimasi Google (SEO Dasar)"
+        ]
+    },
+    {
+        name: "Paket GOW-EXPERT",
+        subtitle: "(Otoritas Pasar)",
+        price: "Rp 3.800.000",
+        desc: "“Dominasi pasar dengan detail informasi yang mewah dan mendalam.”",
+        color: "text-[#a855f7]",
+        bgColor: "bg-[#a855f7]/10",
+        hoverBorder: "hover:border-[#a855f7]/50",
+        features: [
+            "Multi-Halaman / Navigasi Lengkap",
+            "Desain Kustom Eksklusif (Premium)",
+            "Laporan Pengunjung Bulanan"
+        ]
+    }
+];
+---
+
+<!-- Packages Section -->
+<section id="packages" class="py-24 px-6 relative overflow-hidden">
+    <div class="container mx-auto max-w-7xl relative z-10">
+        <div class="text-center mb-16 reveal">
+            <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#ec4899]/30 bg-[#ec4899]/10 text-[#ec4899] text-[10px] font-bold uppercase tracking-widest">
+                Pilihan Paket
+            </div>
+            <h2 class="text-4xl md:text-5xl font-black mb-6 tracking-tight">Investasi <span class="text-[#ec4899]">Masa Depan</span> Digital</h2>
+            <p class="text-white/40 font-medium max-w-2xl mx-auto">Pilih paket yang paling sesuai dengan kebutuhan bisnis Anda.</p>
+            <div class="md:hidden mt-4 text-[10px] font-bold uppercase tracking-widest text-white/20">Geser untuk melihat lainnya →</div>
+        </div>
+
+        <div class="carousel-wrapper">
+            <div id="packages-carousel" class="carousel-container reveal">
+                <div class="carousel-track md:grid md:grid-cols-3 md:gap-8 md:transform-none">
+                    {packages.map((pkg) => (
+                        <div class="carousel-item md:flex-none">
+                            <div class={`glass-card package-card p-10 rounded-[3rem] border ${pkg.popular ? 'border-2 border-[#6366f1] shadow-xl scale-105 z-20' : 'border-white/10'} ${pkg.hoverBorder} transition-all relative h-full flex flex-col`}>
+                                {pkg.popular && (
+                                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#6366f1] text-white rounded-full text-[10px] font-black uppercase tracking-widest">Paling Populer 🚀</div>
+                                )}
+                                <div class="mb-8">
+                                    <h3 class="text-xl font-bold mb-2">{pkg.name}</h3>
+                                    <p class={`text-[10px] ${pkg.popular ? 'text-[#6366f1]' : 'text-white/40'} mb-6 uppercase tracking-widest font-black`}>{pkg.subtitle}</p>
+                                    <div class="flex items-end gap-1 mb-6">
+                                        <span class={`text-3xl md:text-4xl font-black ${pkg.color}`}>{pkg.price}</span>
+                                    </div>
+                                    <p class="text-sm text-white/60 font-medium leading-relaxed mb-8 italic">{pkg.desc}</p>
+                                </div>
+                                <ul class="space-y-4 mb-10 text-sm font-medium flex-grow">
+                                    {pkg.features.map((feature) => (
+                                        <li class="flex items-center gap-3">
+                                            <div class={`w-5 h-5 rounded-full ${pkg.bgColor} flex items-center justify-center ${pkg.color}`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                            </div>
+                                            <span>{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <Button href="#contact-form-section" variant={pkg.popular ? 'primary' : 'outline'}>Pilih Paket</Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+        <!-- Disclaimer -->
+        <div class="mt-16 text-center text-white/20 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+            * Harga sewaktu-waktu dapat berubah sesuai promo yang berlaku
+        </div>
+    </div>
+</section>

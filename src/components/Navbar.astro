@@ -1,0 +1,116 @@
+---
+import Button from './Button.astro';
+import { SITE_CONFIG } from '../data/site-config';
+---
+
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-center p-6 transition-all duration-300" id="navbar">
+    <div class="glass-nav flex items-center justify-between px-8 py-4 w-full max-w-6xl rounded-full border border-white/10 shadow-2xl backdrop-blur-md">
+        <div class="text-2xl font-extrabold tracking-tighter text-white">
+            {SITE_CONFIG.logo.text}<span class="text-[#6366f1]">{SITE_CONFIG.logo.highlight}</span>
+        </div>
+        <div class="hidden md:flex items-center gap-8 text-sm font-semibold">
+            {SITE_CONFIG.navigation.map((item) => (
+                <a href={item.href} class="hover:text-[#6366f1] transition-colors">{item.label}</a>
+            ))}
+            <Button href="/#contact" variant="primary" class="px-6 py-2 text-sm">Hubungi Kami</Button>
+        </div>
+        <button id="mobile-menu-btn" class="md:hidden text-white p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile Sidebar -->
+<div id="mobile-sidebar" class="fixed inset-y-0 right-0 w-80 z-[60] glass-sidebar translate-x-full md:hidden flex flex-col p-8 overflow-y-auto transition-transform duration-500">
+    <div class="flex justify-between items-center mb-12">
+        <div class="text-xl font-extrabold tracking-tighter text-white">
+            {SITE_CONFIG.logo.text}<span class="text-[#6366f1]">{SITE_CONFIG.logo.highlight}</span>
+        </div>
+        <button id="close-sidebar" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-white border border-white/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    
+    <div class="flex flex-col gap-6 text-lg font-semibold mb-12 border-b border-white/5 pb-12">
+        {SITE_CONFIG.navigation.map((item, index) => {
+            const colors = ['text-[#6366f1]', 'text-[#a855f7]', 'text-[#ec4899]'];
+            const color = colors[index % colors.length];
+            return (
+                <a href={item.href} class="sidebar-link hover:text-[#6366f1] transition-colors flex items-center gap-4">
+                    <div class={`w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center ${color}`}>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    {item.label}
+                </a>
+            );
+        })}
+    </div>
+
+    <div class="space-y-8">
+        <div>
+            <h4 class="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Hubungi Kami</h4>
+            <div class="space-y-4">
+                <div class="flex items-center gap-4 text-sm text-white/60">
+                    <svg class="w-5 h-5 text-[#6366f1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    {SITE_CONFIG.contact.email}
+                </div>
+                <div class="flex items-center gap-4 text-sm text-white/60">
+                    <svg class="w-5 h-5 text-[#6366f1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    {SITE_CONFIG.contact.address}, {SITE_CONFIG.contact.location}
+                </div>
+            </div>
+        </div>
+
+        <Button href="#contact" variant="primary" class="block w-full text-center">Hubungi Kami</Button>
+    </div>
+</div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-dark/60 backdrop-blur-sm z-[55] opacity-0 pointer-events-none transition-opacity duration-500 md:hidden"></div>
+
+<script>
+    const navbar = document.getElementById('navbar');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const closeSidebarBtn = document.getElementById('close-sidebar');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar?.classList.add('py-2');
+            navbar?.querySelector('.glass-nav')?.classList.add('shadow-2xl', 'bg-dark/80');
+        } else {
+            navbar?.classList.remove('py-2');
+            navbar?.querySelector('.glass-nav')?.classList.remove('shadow-2xl', 'bg-dark/80');
+        }
+    });
+
+    // Sidebar Toggle
+    const toggleSidebar = (show: boolean) => {
+        if (show) {
+            mobileSidebar?.classList.remove('translate-x-full');
+            mobileSidebar?.classList.add('translate-x-0');
+            sidebarOverlay?.classList.remove('opacity-0', 'pointer-events-none');
+            sidebarOverlay?.classList.add('opacity-100', 'pointer-events-auto');
+            document.body.style.overflow = 'hidden';
+        } else {
+            mobileSidebar?.classList.remove('translate-x-0');
+            mobileSidebar?.classList.add('translate-x-full');
+            sidebarOverlay?.classList.remove('opacity-100', 'pointer-events-auto');
+            sidebarOverlay?.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+    };
+
+    mobileMenuBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeSidebarBtn?.addEventListener('click', () => toggleSidebar(false));
+    sidebarOverlay?.addEventListener('click', () => toggleSidebar(false));
+    sidebarLinks.forEach(link => link.addEventListener('click', () => toggleSidebar(false)));
+</script>

@@ -1,0 +1,126 @@
+---
+---
+
+<!-- Preview Modal -->
+<div id="preview-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 opacity-0 pointer-events-none transition-all duration-500">
+    <div class="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-xl" id="modal-bg"></div>
+    <div class="glass-card max-w-4xl w-full max-h-[90vh] flex flex-col rounded-[3rem] relative z-10 scale-90 transition-all duration-500 border border-white/10 shadow-2xl overflow-hidden">
+        <!-- Header (Fixed) -->
+        <div class="p-8 pb-4 flex justify-between items-start relative z-20">
+            <div>
+                <span id="modal-category" class="text-[#6366f1] text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Category</span>
+                <h3 id="modal-title" class="text-3xl md:text-4xl font-black text-white tracking-tight">Project Title</h3>
+            </div>
+            <button id="close-modal" class="w-12 h-12 glass-card rounded-full flex items-center justify-center hover:bg-[#6366f1] hover:text-white transition-all border border-white/10 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content (Scrollable Area) -->
+        <div class="flex-grow overflow-y-auto custom-scrollbar p-8 pt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- Image -->
+                <div class="aspect-video md:aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/5">
+                    <img id="modal-image" src="" alt="" class="w-full h-full object-cover">
+                </div>
+                
+                <!-- Details -->
+                <div class="flex flex-col">
+                    <div class="mb-8">
+                        <h4 class="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-4">Headline Utama</h4>
+                        <p id="modal-headline" class="text-xl md:text-2xl font-bold text-white leading-tight italic">"Headline goes here"</p>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-4">Fokus Utama</h4>
+                        <p id="modal-focus" class="text-white/60 font-medium leading-relaxed">Focus areas go here.</p>
+                    </div>
+
+                    <div class="flex flex-col flex-grow min-h-0">
+                        <h4 class="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-4">Keunggulan Website</h4>
+                        <div class="flex-grow overflow-y-auto custom-scrollbar pr-4 max-h-[300px]">
+                            <ul id="modal-advantages" class="space-y-6">
+                                <!-- Advantages will be injected here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer (Fixed) -->
+        <div class="p-8 pt-4 border-t border-white/5 bg-white/[0.02] backdrop-blur-md relative z-20">
+            <a href="#contact-form-section" id="modal-cta" class="block text-center py-5 bg-[#6366f1] text-white rounded-[2rem] font-black text-lg shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-1 transition-all duration-500 cta-highlight cta-glow">
+                Konsultasi Project Ini
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { GOWKAN_MODAL_DATA } from '../data/modal-data';
+
+    const modal = document.getElementById('preview-modal');
+    const modalImage = document.getElementById('modal-image') as HTMLImageElement;
+    const modalCategory = document.getElementById('modal-category');
+    const modalTitle = document.getElementById('modal-title');
+    const modalHeadline = document.getElementById('modal-headline');
+    const modalFocus = document.getElementById('modal-focus');
+    const modalAdvantages = document.getElementById('modal-advantages');
+    const closeModal = document.getElementById('close-modal');
+    const modalBg = document.getElementById('modal-bg');
+    const modalCta = document.getElementById('modal-cta');
+
+    const hideModal = () => {
+        modal?.classList.add('opacity-0', 'pointer-events-none');
+        modal?.querySelector('.glass-card')?.classList.add('scale-90');
+        document.body.style.overflow = '';
+    };
+
+    closeModal?.addEventListener('click', hideModal);
+    modalBg?.addEventListener('click', hideModal);
+    modalCta?.addEventListener('click', hideModal);
+
+    // Listen for trigger buttons
+    document.querySelectorAll('[data-preview-trigger]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sector = btn.getAttribute('data-preview-trigger');
+            if (!sector) return;
+            
+            const data = GOWKAN_MODAL_DATA[sector];
+
+            if (data && modalImage && modalCategory && modalTitle && modalHeadline && modalFocus && modalAdvantages) {
+                modalImage.src = data.image;
+                modalCategory.textContent = data.category;
+                modalTitle.textContent = data.title;
+                modalHeadline.textContent = `"${data.headline}"`;
+                modalFocus.textContent = data.focus;
+                
+                // Clear and fill advantages
+                modalAdvantages.innerHTML = '';
+                data.advantages.forEach((adv: any) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start gap-4 group/item';
+                    li.innerHTML = `
+                        <div class="w-8 h-8 bg-[#6366f1]/10 rounded-lg flex items-center justify-center text-[#6366f1] shrink-0 group-hover/item:bg-[#6366f1] group-hover/item:text-white transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h6 class="text-sm font-black text-white mb-1">${adv.title}</h6>
+                            <p class="text-xs text-white/40 leading-relaxed font-medium">${adv.desc}</p>
+                        </div>
+                    `;
+                    modalAdvantages.appendChild(li);
+                });
+
+                modal?.classList.remove('opacity-0', 'pointer-events-none');
+                modal?.querySelector('.glass-card')?.classList.remove('scale-90');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+</script>

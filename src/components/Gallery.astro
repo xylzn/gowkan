@@ -1,0 +1,64 @@
+---
+const portfolioItems = [
+    { title: "Elite Business Corp", category: "Corporate", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" },
+    { title: "Modern Fashion Store", category: "E-Commerce", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop" },
+    { title: "The Gourmet Table", category: "Restaurant", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000&auto=format&fit=crop" },
+    { title: "Visual Stories", category: "Photography", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop" },
+
+    { title: "Prime Living Estate", category: "Real Estate", image: "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=1000&auto=format&fit=crop" },
+    { title: "Justice & Partners", category: "Law Firm", image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1000&auto=format&fit=crop" },
+    { title: "Quick Fix Solutions", category: "Home Services", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1000&auto=format&fit=crop" }
+];
+---
+
+<!-- Gallery Section -->
+<section id="gallery" class="py-24 px-6 relative overflow-hidden">
+    <div class="container mx-auto max-w-7xl">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 reveal">
+            <div class="max-w-2xl">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 text-[#a855f7] text-[10px] font-bold uppercase tracking-widest">
+                    Demo Website
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black mb-6 tracking-tight">Karya <span class="text-[#a855f7]">Terbaik</span> Kami</h2>
+                <p class="text-white/40 font-medium">Lihat bagaimana kami mentransformasi bisnis menjadi platform digital profesional.</p>
+            </div>
+            <div class="hidden md:flex gap-4">
+                <button id="gallery-prev" class="arrow-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button id="gallery-next" class="arrow-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="carousel-wrapper">
+            <div id="gallery-carousel" class="carousel-container reveal">
+                <div class="carousel-track">
+                    {portfolioItems.map((item) => (
+                        <div class="carousel-item">
+                            <div class="glass-card package-card gallery-item p-6 rounded-[3rem] border border-white/10 transition-all group h-full flex flex-col">
+                                <div class="aspect-video overflow-hidden rounded-3xl mb-8 relative">
+                                    <img src={item.image} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div class="absolute inset-0 bg-[#6366f1]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#6366f1] shadow-xl scale-50 group-hover:scale-100 transition-transform duration-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="px-2 flex-grow">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#a855f7]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                        <span class="text-[#a855f7] text-[10px] font-bold uppercase tracking-[0.2em] block">{item.category}</span>
+                                    </div>
+                                    <h3 class="text-2xl font-black mb-6 tracking-tight group-hover:text-[#a855f7] transition-colors">{item.title}</h3>
+                                </div>
+                                <button data-preview-trigger={item.category} class="px-8 py-3 bg-[#6366f1] text-white rounded-2xl text-sm font-black w-full text-center hover:bg-[#a855f7] transition-all cta-highlight cta-glow mt-auto">Lihat Demo</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

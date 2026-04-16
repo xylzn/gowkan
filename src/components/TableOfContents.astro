@@ -1,0 +1,87 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+// Filter only H2 and H3 for cleaner ToC
+const filteredHeadings = headings.filter(h => h.depth === 2 || h.depth === 3);
+---
+
+<nav id="toc" class="sticky top-32 max-h-[calc(100vh-160px)] overflow-y-auto pr-4 custom-scrollbar">
+  <div class="mb-6 flex items-center gap-3">
+    <div class="w-1 h-6 bg-primary rounded-full"></div>
+    <h2 class="text-sm font-black text-white uppercase tracking-widest">DAFTAR ISI</h2>
+  </div>
+  
+  <ul class="space-y-4">
+    {filteredHeadings.map((heading) => (
+      <li class={`${heading.depth === 3 ? 'ml-6' : ''}`}>
+        <a 
+          href={`#${heading.slug}`} 
+          class="toc-link group flex items-start gap-3 text-sm font-bold text-white/40 hover:text-primary transition-all duration-300 leading-snug"
+          data-slug={heading.slug}
+        >
+          <span class="toc-bullet mt-1.5 w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-primary transition-colors flex-shrink-0"></span>
+          <span>{heading.text}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 2px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.2);
+  }
+
+  .toc-link.active {
+    @apply text-primary;
+  }
+  .toc-link.active .toc-bullet {
+    @apply bg-primary scale-125;
+  }
+</style>
+
+<script>
+  // Logic for Active TOC Link on Scroll
+  const observerOptions = {
+    root: null,
+    rootMargin: '-100px 0px -70% 0px',
+    threshold: 0
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const id = entry.target.getAttribute('id');
+      const tocLink = document.querySelector(`.toc-link[data-slug="${id}"]`);
+      
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.toc-link').forEach((link) => link.classList.remove('active'));
+        if (tocLink) tocLink.classList.add('active');
+      }
+    });
+  }, observerOptions);
+
+  // Observe all H2 and H3 elements within the article content
+  document.querySelectorAll('.prose h2, .prose h3').forEach((heading) => {
+    observer.observe(heading);
+  });
+</script>
