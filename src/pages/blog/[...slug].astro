@@ -7,49 +7,43 @@ import Button from '../../components/Button.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 
-// 1. WAJIB: Biar getStaticPaths jalan di Vercel
+// 1. TAMBAHIN INI: Biar Vercel tau ini halaman statis
 export const prerender = true;
 
 export async function getStaticPaths() {
     const posts = await getCollection('blog');
-    return posts.map((post) => {
-        // KUNCI: Kita buang ekstensi .md atau .mdx biar URL-nya cantik
-        const cleanSlug = post.id.replace(/\.[^/.]+$/, "");
-        
-        return {
-            params: { slug: cleanSlug }, 
-            props: { post },           
-        };
-    });
+    return posts.map((post) => ({
+        // 2. KUNCI: Hapus ".md" dari ID biar URL-nya ketemu (gak 404)
+        params: { slug: post.id.replace(/\.[^/.]+$/, "") }, 
+        props: { post },           
+    }));
 }
 
 interface Props {
     post: CollectionEntry<'blog'>;
 }
 
-// 2. Ambil props (PASTIKAN CUMA SATU BARIS, JANGAN DOUBLE!)
+// 3. HANYA SATU BARIS (Jangan dobel kayak sebelumnya!)
 const { post } = Astro.props;
 
-// 3. Proteksi biar gak crash kalau post gak ketemu
 if (!post) {
     return Astro.redirect('/404');
 }
 
 const { Content, headings } = await render(post);
 
-// Logika Reading Time & Breadcrumbs
+// Logika Reading Time
 const wordsPerMinute = 200;
-const noOfWords = post.body ? post.body.split(/\s+/g).length : 0;
-const minutes = Math.ceil(noOfWords / wordsPerMinute) || 1;
+const noOfWords = (typeof post.body === 'string') ? post.body.split(/\s+/g).length : 0;
+const minutes = noOfWords > 0 ? Math.ceil(noOfWords / wordsPerMinute) : 1;
 const readTime = `${minutes} min baca`;
 
 const breadcrumbItems = [
   { label: 'Beranda', href: '/' },
   { label: 'Blog', href: '/blog' },
-  { label: post.data.title },
+  { label: post.data.title ?? 'Untitled' },
 ];
 ---
-
 <MainLayout 
     title={`${post.data.title} | Gowkan Blog`}
     description={post.data.description}
