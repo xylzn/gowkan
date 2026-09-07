@@ -1,0 +1,317 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import { getCurrentUser, supabasePublic } from '../../../../lib/supabase';
+import type { GalleryItem } from '../../../../lib/types';
+
+const user = await getCurrentUser(Astro);
+const adminEmail = user?.email ?? 'Admin';
+
+const id = String(Astro.params.id || '').trim();
+if (!id) return Astro.redirect('/admin/gallery', 302);
+
+const { data: row } = await supabasePublic
+    .from('gallery_items')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+if (!row) return Astro.redirect('/admin/gallery', 302);
+const item = row as GalleryItem;
+
+const initialData = {
+    nama_proyek: item.nama_proyek ?? '',
+    url: item.url ?? 'https://',
+    kategori: item.kategori ?? '',
+    thumbnail_url: item.thumbnail_url ?? 'https://',
+    ringkasan: item.ringkasan ?? '',
+    detail_pekerjaan: item.detail_pekerjaan ?? '',
+    urutan_tampil: item.urutan_tampil ?? 0,
+};
+const isEdit = true;
+const pageTitle = `Edit: ${item.nama_proyek}`;
+const submitUrl = `/api/gallery/${item.id}`;
+const submitMethod = 'PUT';
+---
+
+<MainLayout
+    title={`${pageTitle} | GOWKAN Admin`}
+    description="Form edit gallery item"
+>
+    <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center p-6">
+        <div class="glass-nav flex items-center justify-between px-8 py-4 w-full max-w-5xl rounded-full border border-white/10 shadow-2xl backdrop-blur-md">
+            <div class="text-2xl font-extrabold tracking-tighter text-white">
+                GOW<span class="text-[#6366f1]">KAN</span>
+                <span class="ml-3 text-[10px] font-bold uppercase tracking-widest text-[#a855f7] bg-[#a855f7]/10 px-3 py-1 rounded-full border border-[#a855f7]/30">Admin</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a href="/admin" class="hover:text-[#6366f1] transition-colors">Dashboard</a>
+                <a href="/admin/gallery" class="text-[#6366f1] font-bold">Gallery</a>
+                <a href="/admin/blog" class="hover:text-[#6366f1] transition-colors">Blog</a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <span class="text-white/30 text-xs font-medium">{adminEmail}</span>
+                <button class="logout-btn px-6 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-xs font-bold uppercase tracking-widest">Logout</button>
+            </div>
+            <button class="mobile-admin-menu-btn md:hidden text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+        </div>
+    </nav>
+    <div class="mobile-admin-sidebar fixed inset-y-0 right-0 w-80 z-[60] glass-sidebar translate-x-full md:hidden flex flex-col p-8 overflow-y-auto transition-transform duration-500">
+        <div class="flex justify-between items-center mb-12">
+            <div class="text-xl font-extrabold tracking-tighter text-white">GOW<span class="text-[#6366f1]">KAN</span></div>
+            <button class="close-admin-sidebar w-10 h-10 glass-card rounded-full flex items-center justify-center text-white border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div class="flex flex-col gap-6 text-lg font-semibold mb-12 border-b border-white/5 pb-12">
+            <a href="/admin" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#6366f1]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>Dashboard</a>
+            <a href="/admin/gallery" class="flex items-center gap-4 text-[#a855f7]"><div class="w-8 h-8 bg-[#a855f7]/10 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>Kelola Gallery</a>
+            <a href="/admin/blog" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#ec4899]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>Kelola Blog</a>
+        </div>
+        <div class="mt-auto space-y-4">
+            <div class="text-white/30 text-xs font-medium">{adminEmail}</div>
+            <button class="logout-btn w-full px-6 py-4 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-sm font-bold uppercase tracking-widest">Logout</button>
+        </div>
+    </div>
+    <div class="admin-sidebar-overlay fixed inset-0 bg-dark/60 backdrop-blur-sm z-[55] opacity-0 pointer-events-none transition-opacity duration-500 md:hidden"></div>
+
+    <main class="pt-32 pb-24 px-6 min-h-screen">
+        <div class="container mx-auto max-w-5xl">
+            <a href="/admin/gallery" class="inline-flex items-center gap-3 text-white/40 hover:text-[#6366f1] transition-colors mb-8 text-sm font-bold uppercase tracking-widest reveal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                Kembali ke Daftar Gallery
+            </a>
+
+            <div class="mb-12 reveal">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 text-[#a855f7] text-[10px] font-bold uppercase tracking-widest">
+                    Edit Proyek
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">{pageTitle}</h1>
+                <p class="text-white/40 font-medium max-w-2xl">Edit data proyek. Perubahan otomatis tayang setelah disimpan.</p>
+            </div>
+
+            <div class="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 reveal">
+                <form id="gallery-form" data-submit-url={submitUrl} data-method={submitMethod} class="space-y-8">
+                    <div id="form-error" class="hidden rounded-3xl bg-red-500/10 border border-red-500/30 px-8 py-5 text-red-300 font-medium"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="md:col-span-2">
+                            <label for="nama_proyek" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Nama Proyek *</label>
+                            <input id="nama_proyek" name="nama_proyek" type="text" required placeholder="mis. Selasar Bahasa" value={initialData.nama_proyek} class="glass-input w-full" />
+                        </div>
+
+                        <div>
+                            <label for="url" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">URL Website *</label>
+                            <input id="url" name="url" type="url" required placeholder="https://contoh.com" value={initialData.url} class="glass-input w-full" />
+                        </div>
+
+                        <div>
+                            <label for="kategori" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Kategori / Sektor *</label>
+                            <input id="kategori" name="kategori" type="text" required placeholder="mis. Corporate, E-Commerce" value={initialData.kategori} class="glass-input w-full" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Thumbnail Proyek *</label>
+                            <div class="flex items-center gap-2 mb-4 p-1 glass-card rounded-2xl w-fit border border-white/5">
+                                <button type="button" data-tab-switch="link" data-target="thumbnail-tab" class="active-tab px-5 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all">Link URL</button>
+                                <button type="button" data-tab-switch="upload" data-target="thumbnail-tab" class="px-5 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest text-white/50 hover:text-white/80 transition-all">Upload File</button>
+                            </div>
+                            <div data-tab-panel="thumbnail-tab" data-tab-value="link">
+                                <input id="thumbnail_url" name="thumbnail_url" type="url" required placeholder="https://images.unsplash.com/..." value={initialData.thumbnail_url} class="glass-input w-full" />
+                            </div>
+                            <div data-tab-panel="thumbnail-tab" data-tab-value="upload" class="hidden">
+                                <div id="thumbnail-upload-box" class="border-2 border-dashed border-white/10 hover:border-[#a855f7]/60 bg-white/[0.02] rounded-[2rem] p-8 text-center transition-all cursor-pointer group">
+                                    <input id="thumbnail-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
+                                    <div class="w-16 h-16 mx-auto bg-[#a855f7]/10 rounded-3xl flex items-center justify-center text-[#a855f7] mb-4 group-hover:scale-110 transition-transform">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                    <div id="thumbnail-up-status" class="text-sm font-bold text-white/70 mb-1">Klik untuk pilih gambar</div>
+                                    <div class="text-xs text-white/30 font-medium">atau drag & drop ke sini. JPG / PNG / WebP / GIF, max 5 MB</div>
+                                    <div id="thumbnail-up-loading" class="hidden mt-4 items-center justify-center gap-3">
+                                        <div class="w-5 h-5 border-2 border-[#a855f7] border-t-transparent rounded-full animate-spin"></div>
+                                        <span class="text-xs font-bold uppercase tracking-widest text-[#a855f7]">Mengupload...</span>
+                                    </div>
+                                </div>
+                                <div id="thumbnail-up-error" class="hidden mt-3 rounded-2xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm font-medium"></div>
+                            </div>
+                            <div class="mt-4">
+                                <div id="thumb-preview-wrap" class="hidden aspect-video w-full max-w-md rounded-[2rem] overflow-hidden border border-white/10 bg-white/5">
+                                    <img id="thumb-preview" class="w-full h-full object-cover" alt="Thumbnail preview" referrerpolicy="no-referrer" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="ringkasan" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Ringkasan Proyek *</label>
+                            <textarea id="ringkasan" name="ringkasan" required rows={3} placeholder="Ringkasan singkat untuk kartu Gallery." class="glass-input w-full resize-none">{initialData.ringkasan}</textarea>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="detail_pekerjaan" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Detail Pekerjaan *</label>
+                            <textarea id="detail_pekerjaan" name="detail_pekerjaan" required rows={10} placeholder="Detail lengkap yang ditampilkan di modal preview." class="glass-input w-full resize-y">{initialData.detail_pekerjaan}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="urutan_tampil" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Urutan Tampil</label>
+                            <input id="urutan_tampil" name="urutan_tampil" type="number" min={0} value={initialData.urutan_tampil} class="glass-input w-full" />
+                            <p class="text-white/20 text-xs mt-3 font-medium">Angka lebih kecil = muncul lebih dulu. Default 0.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
+                        <a href="/admin/gallery" class="flex-1 py-5 glass-card text-center text-white/60 rounded-[2rem] font-black text-lg hover:bg-white/10 transition-all">Batal</a>
+                        <button type="submit" id="submit-btn" class="flex-[2] py-5 bg-[#6366f1] text-white rounded-[2rem] font-black text-lg shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-1 transition-all duration-500 cta-highlight cta-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                            <span id="btn-text">Simpan Perubahan</span>
+                            <span id="btn-loading" class="hidden">Menyimpan...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</MainLayout>
+
+<script>
+    function initTabSwitchers() {
+        document.querySelectorAll<HTMLButtonElement>('[data-tab-switch]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                const value = btn.getAttribute('data-tab-switch');
+                if (!target || !value) return;
+                document.querySelectorAll(`[data-tab-panel="${target}"]`).forEach(p => {
+                    p.classList.toggle('hidden', p.getAttribute('data-tab-value') !== value);
+                });
+                document.querySelectorAll<HTMLButtonElement>(`[data-tab-switch][data-target="${target}"]`).forEach(b => {
+                    const active = b === btn;
+                    b.classList.toggle('active-tab', active);
+                    b.classList.toggle('bg-[#6366f1]', active);
+                    b.classList.toggle('text-white', active);
+                    b.classList.toggle('shadow-lg', active);
+                    b.classList.toggle('shadow-[#6366f1]/30', active);
+                    b.classList.toggle('text-white/50', !active);
+                });
+            });
+            if (btn.classList.contains('active-tab')) {
+                btn.classList.add('bg-[#6366f1]', 'text-white', 'shadow-lg', 'shadow-[#6366f1]/30');
+            }
+        });
+    }
+
+    async function handleImageUpload(args: {
+        fileInputId: string; boxId: string; statusId: string; loadingId: string; errorId: string;
+        urlInputId: string; previewWrapId: string; previewImgId: string; context: string;
+    }) {
+        const fileInput = document.getElementById(args.fileInputId) as HTMLInputElement | null;
+        const box = document.getElementById(args.boxId);
+        const status = document.getElementById(args.statusId);
+        const loading = document.getElementById(args.loadingId);
+        const errEl = document.getElementById(args.errorId);
+        const urlInput = document.getElementById(args.urlInputId) as HTMLInputElement | null;
+        const previewWrap = document.getElementById(args.previewWrapId);
+        const previewImg = document.getElementById(args.previewImgId) as HTMLImageElement | null;
+        function setLoading(v: boolean) {
+            if (loading) { loading.classList.toggle('hidden', !v); loading.classList.toggle('flex', v); }
+            if (box) { (box as HTMLElement).classList.toggle('opacity-60', v); (box as HTMLElement).classList.toggle('pointer-events-none', v); }
+        }
+        function setErr(msg: string) { if (!errEl) return; if (msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); } else errEl.classList.add('hidden'); }
+        function setStatus(t: string) { if (status) status.textContent = t; }
+        function setPreviewFromUrl(url: string) {
+            if (!previewWrap || !previewImg) return;
+            if (url && /^https?:\/\//i.test(url) || url.startsWith('blob:')) { previewImg.src = url; previewWrap.classList.remove('hidden'); }
+            else previewWrap.classList.add('hidden');
+        }
+        urlInput?.addEventListener('input', () => setPreviewFromUrl(urlInput.value.trim()));
+        setPreviewFromUrl(urlInput?.value || '');
+        box?.addEventListener('click', () => fileInput?.click());
+        ['dragenter','dragover'].forEach(ev => box?.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); box.classList.add('border-[#a855f7]','bg-[#a855f7]/10','scale-[1.01]'); }));
+        ['dragleave','drop'].forEach(ev => box?.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); box.classList.remove('border-[#a855f7]','bg-[#a855f7]/10','scale-[1.01]'); }));
+        box?.addEventListener('drop', (e) => { const f = (e as DragEvent).dataTransfer?.files?.[0]; if (f) startUpload(f); });
+        fileInput?.addEventListener('change', (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) startUpload(f); });
+
+        async function startUpload(file: File) {
+            setErr('');
+            const readerPreview = URL.createObjectURL(file);
+            setStatus(`Lokasi file dipilih: ${file.name}`);
+            setPreviewFromUrl(readerPreview);
+            try {
+                setLoading(true);
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('context', args.context);
+                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                const data = await res.json().catch(() => ({}));
+                if (data?.success && data.url) {
+                    URL.revokeObjectURL(readerPreview);
+                    if (urlInput) urlInput.value = String(data.url).trim();
+                    setStatus(`Upload sukses: ${file.name}`);
+                    setPreviewFromUrl(data.url);
+                } else {
+                    setErr(data?.error || `Upload gagal untuk file "${file.name}".`);
+                    setStatus('Gagal upload — pilih file lain');
+                }
+            } catch (e: any) {
+                setErr(e?.message || 'Network error saat upload gambar.');
+                setStatus('Gagal upload — coba lagi');
+            } finally {
+                setLoading(false);
+                if (fileInput) fileInput.value = '';
+            }
+        }
+    }
+
+    async function doLogout() { try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {} window.location.href = '/admin/login'; }
+    document.querySelectorAll('.logout-btn').forEach(b => b.addEventListener('click', doLogout));
+    const mobileBtn = document.querySelector('.mobile-admin-menu-btn');
+    const closeBtn = document.querySelector('.close-admin-sidebar');
+    const sidebar = document.querySelector('.mobile-admin-sidebar') as HTMLElement | null;
+    const overlay = document.querySelector('.admin-sidebar-overlay') as HTMLElement | null;
+    const toggleSidebar = (show: boolean) => {
+        if (!sidebar || !overlay) return;
+        if (show) { sidebar.classList.remove('translate-x-full'); sidebar.classList.add('translate-x-0'); overlay.classList.remove('opacity-0','pointer-events-none'); overlay.classList.add('opacity-100','pointer-events-auto'); document.body.style.overflow = 'hidden'; }
+        else { sidebar.classList.remove('translate-x-0'); sidebar.classList.add('translate-x-full'); overlay.classList.remove('opacity-100','pointer-events-auto'); overlay.classList.add('opacity-0','pointer-events-none'); document.body.style.overflow = ''; }
+    };
+    mobileBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeBtn?.addEventListener('click', () => toggleSidebar(false));
+    overlay?.addEventListener('click', () => toggleSidebar(false));
+
+    initTabSwitchers();
+    handleImageUpload({
+        fileInputId: 'thumbnail-file', boxId: 'thumbnail-upload-box', statusId: 'thumbnail-up-status', loadingId: 'thumbnail-up-loading', errorId: 'thumbnail-up-error',
+        urlInputId: 'thumbnail_url', previewWrapId: 'thumb-preview-wrap', previewImgId: 'thumb-preview', context: 'gallery',
+    });
+
+    const form = document.getElementById('gallery-form') as HTMLFormElement | null;
+    const formErr = document.getElementById('form-error');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+    const btnText = document.getElementById('btn-text');
+    const btnLoading = document.getElementById('btn-loading');
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        formErr?.classList.add('hidden');
+        const thumbUrl = (document.getElementById('thumbnail_url') as HTMLInputElement | null)?.value?.trim() || '';
+        if (!thumbUrl) {
+            if (formErr) { formErr.textContent = 'Thumbnail belum diisi: pilih Upload atau isi Link URL.'; formErr.classList.remove('hidden'); }
+            return;
+        }
+        if (submitBtn && btnText && btnLoading) { submitBtn.disabled = true; btnText.classList.add('hidden'); btnLoading.classList.remove('hidden'); }
+        try {
+            const submitUrl = form.getAttribute('data-submit-url') || '/api/gallery';
+            const method = (form.getAttribute('data-method') || 'POST') as 'POST' | 'PUT';
+            const fd = new FormData(form);
+            const payload: Record<string, any> = {};
+            fd.forEach((v, k) => { payload[k] = typeof v === 'string' ? v.trim() : v; });
+            payload.urutan_tampil = Number(payload.urutan_tampil) || 0;
+            const res = await fetch(submitUrl, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await res.json().catch(() => ({}));
+            if (data?.success) { window.location.href = '/admin/gallery'; }
+            else { if (formErr) { formErr.textContent = data?.error || 'Gagal menyimpan.'; formErr.classList.remove('hidden'); } }
+        } catch (err: any) {
+            if (formErr) { formErr.textContent = err?.message || 'Network error.'; formErr.classList.remove('hidden'); }
+        } finally {
+            if (submitBtn && btnText && btnLoading) { submitBtn.disabled = false; btnText.classList.remove('hidden'); btnLoading.classList.add('hidden'); }
+        }
+    });
+
+    const rv = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('active'); rv.unobserve(e.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => rv.observe(el));
+</script>

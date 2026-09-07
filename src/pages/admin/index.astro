@@ -1,0 +1,222 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCurrentUser, supabasePublic } from '../../lib/supabase';
+
+const user = await getCurrentUser(Astro);
+
+const { count: galleryCount, error: gErr } = await supabasePublic
+    .from('gallery_items')
+    .select('*', { count: 'exact', head: true });
+
+const { count: articleCount, error: aErr } = await supabasePublic
+    .from('articles')
+    .select('*', { count: 'exact', head: true });
+
+const totalGallery = galleryCount ?? 0;
+const totalArticles = articleCount ?? 0;
+const adminEmail = user?.email ?? 'Admin';
+---
+
+<MainLayout
+    title="Dashboard Admin | GOWKAN"
+    description="Dashboard admin GOWKAN"
+>
+    <!-- Admin Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center p-6">
+        <div class="glass-nav flex items-center justify-between px-8 py-4 w-full max-w-6xl rounded-full border border-white/10 shadow-2xl backdrop-blur-md">
+            <div class="text-2xl font-extrabold tracking-tighter text-white">
+                GOW<span class="text-[#6366f1]">KAN</span>
+                <span class="ml-3 text-[10px] font-bold uppercase tracking-widest text-[#a855f7] bg-[#a855f7]/10 px-3 py-1 rounded-full border border-[#a855f7]/30">Admin</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a href="/admin" class="text-[#6366f1] font-bold">Dashboard</a>
+                <a href="/admin/gallery" class="hover:text-[#6366f1] transition-colors">Gallery</a>
+                <a href="/admin/blog" class="hover:text-[#6366f1] transition-colors">Blog</a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <span class="text-white/30 text-xs font-medium">{adminEmail}</span>
+                <button id="logout-btn" class="px-6 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-xs font-bold uppercase tracking-widest">
+                    Logout
+                </button>
+            </div>
+            <button id="mobile-admin-menu-btn" class="md:hidden text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Admin Sidebar -->
+    <div id="mobile-admin-sidebar" class="fixed inset-y-0 right-0 w-80 z-[60] glass-sidebar translate-x-full md:hidden flex flex-col p-8 overflow-y-auto transition-transform duration-500">
+        <div class="flex justify-between items-center mb-12">
+            <div class="text-xl font-extrabold tracking-tighter text-white">
+                GOW<span class="text-[#6366f1]">KAN</span>
+            </div>
+            <button id="close-admin-sidebar" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-white border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex flex-col gap-6 text-lg font-semibold mb-12 border-b border-white/5 pb-12">
+            <a href="/admin" class="flex items-center gap-4 text-[#6366f1] hover:text-[#6366f1] transition-colors">
+                <div class="w-8 h-8 bg-[#6366f1]/10 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+                Dashboard
+            </a>
+            <a href="/admin/gallery" class="flex items-center gap-4 hover:text-[#6366f1] transition-colors">
+                <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#a855f7]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
+                Kelola Gallery
+            </a>
+            <a href="/admin/blog" class="flex items-center gap-4 hover:text-[#6366f1] transition-colors">
+                <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#ec4899]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                Kelola Blog
+            </a>
+        </div>
+        <div class="mt-auto space-y-4">
+            <div class="text-white/30 text-xs font-medium">{adminEmail}</div>
+            <button id="mobile-logout-btn" class="w-full px-6 py-4 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-sm font-bold uppercase tracking-widest">
+                Logout
+            </button>
+        </div>
+    </div>
+    <div id="admin-sidebar-overlay" class="fixed inset-0 bg-dark/60 backdrop-blur-sm z-[55] opacity-0 pointer-events-none transition-opacity duration-500 md:hidden"></div>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-24 px-6 min-h-screen">
+        <div class="container mx-auto max-w-6xl">
+            <!-- Header -->
+            <div class="mb-16 reveal">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 text-[#a855f7] text-[10px] font-bold uppercase tracking-widest">
+                    Dashboard
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black mb-6 tracking-tight">
+                    Selamat Datang, <span class="text-[#6366f1]">Admin</span> 👋
+                </h1>
+                <p class="text-white/40 font-medium text-lg max-w-2xl">
+                    Kelola proyek gallery dan artikel blog GOWKAN dari satu tempat. Data otomatis tersimpan di database dan langsung tayang di website.
+                </p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                <!-- Gallery Stats -->
+                <div class="glass-card rounded-[3rem] p-10 border border-white/10 group hover:border-[#a855f7]/50 transition-all reveal">
+                    <div class="flex items-start justify-between mb-8">
+                        <div class="w-16 h-16 bg-[#a855f7]/10 rounded-[2rem] flex items-center justify-center text-[#a855f7] group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-white/30 bg-white/5 px-3 py-1.5 rounded-full">Total Proyek</span>
+                    </div>
+                    <div class="text-6xl md:text-7xl font-black text-white mb-4 tracking-tight">{totalGallery}</div>
+                    <div class="text-white/40 font-medium mb-8">Proyek tersimpan di tabel gallery_items</div>
+                    <a href="/admin/gallery" class="inline-flex items-center gap-3 px-8 py-4 bg-[#a855f7]/10 border border-[#a855f7]/30 text-[#a855f7] rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-[#a855f7]/20 transition-all">
+                        Kelola Gallery
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Blog Stats -->
+                <div class="glass-card rounded-[3rem] p-10 border border-white/10 group hover:border-[#6366f1]/50 transition-all reveal">
+                    <div class="flex items-start justify-between mb-8">
+                        <div class="w-16 h-16 bg-[#6366f1]/10 rounded-[2rem] flex items-center justify-center text-[#6366f1] group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-white/30 bg-white/5 px-3 py-1.5 rounded-full">Total Artikel</span>
+                    </div>
+                    <div class="text-6xl md:text-7xl font-black text-white mb-4 tracking-tight">{totalArticles}</div>
+                    <div class="text-white/40 font-medium mb-8">Artikel tersimpan di tabel articles</div>
+                    <a href="/admin/blog" class="inline-flex items-center gap-3 px-8 py-4 bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#6366f1] rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-[#6366f1]/20 transition-all">
+                        Kelola Blog
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links / Panduan -->
+            <div class="glass-card rounded-[3rem] p-10 border border-white/10 reveal">
+                <h3 class="text-2xl font-black mb-6 tracking-tight">Panduan Cepat</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 rounded-[2rem] bg-white/[0.02] border border-white/5">
+                        <h4 class="text-lg font-black text-[#a855f7] mb-3 flex items-center gap-3">
+                            <span class="w-6 h-6 bg-[#a855f7]/10 rounded-full flex items-center justify-center text-xs">1</span>
+                            Tambah Proyek Gallery
+                        </h4>
+                        <p class="text-white/40 text-sm leading-relaxed font-medium">
+                            Buka <a href="/admin/gallery/new" class="text-[#a855f7] underline underline-offset-4 font-bold">/admin/gallery/new</a>,
+                            isi nama proyek, URL website, kategori, link thumbnail, ringkasan, dan detail pekerjaan. Klik simpan — proyek langsung tayang.
+                        </p>
+                    </div>
+                    <div class="p-6 rounded-[2rem] bg-white/[0.02] border border-white/5">
+                        <h4 class="text-lg font-black text-[#6366f1] mb-3 flex items-center gap-3">
+                            <span class="w-6 h-6 bg-[#6366f1]/10 rounded-full flex items-center justify-center text-xs">2</span>
+                            Upload Artikel Blog
+                        </h4>
+                        <p class="text-white/40 text-sm leading-relaxed font-medium">
+                            Buka <a href="/admin/blog/new" class="text-[#6366f1] underline underline-offset-4 font-bold">/admin/blog/new</a>,
+                            drag & drop file .md dengan frontmatter lengkap (title, description, pubDate, category, heroImage). Preview muncul sebelum publish.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</MainLayout>
+
+<script>
+    // Logout handler
+    async function doLogout() {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        } catch {
+            window.location.href = '/admin/login';
+        }
+    }
+    document.getElementById('logout-btn')?.addEventListener('click', doLogout);
+    document.getElementById('mobile-logout-btn')?.addEventListener('click', doLogout);
+
+    // Mobile admin sidebar toggle
+    const mobileBtn = document.getElementById('mobile-admin-menu-btn');
+    const closeBtn = document.getElementById('close-admin-sidebar');
+    const sidebar = document.getElementById('mobile-admin-sidebar');
+    const overlay = document.getElementById('admin-sidebar-overlay');
+
+    const toggleSidebar = (show: boolean) => {
+        if (show) {
+            sidebar?.classList.remove('translate-x-full');
+            sidebar?.classList.add('translate-x-0');
+            overlay?.classList.remove('opacity-0', 'pointer-events-none');
+            overlay?.classList.add('opacity-100', 'pointer-events-auto');
+            document.body.style.overflow = 'hidden';
+        } else {
+            sidebar?.classList.remove('translate-x-0');
+            sidebar?.classList.add('translate-x-full');
+            overlay?.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay?.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+    };
+
+    mobileBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeBtn?.addEventListener('click', () => toggleSidebar(false));
+    overlay?.addEventListener('click', () => toggleSidebar(false));
+
+    // Reveal observer
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+</script>

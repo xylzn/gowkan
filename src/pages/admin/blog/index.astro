@@ -1,0 +1,212 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCurrentUser, supabasePublic } from '../../../lib/supabase';
+import type { Article } from '../../../lib/types';
+
+const user = await getCurrentUser(Astro);
+const adminEmail = user?.email ?? 'Admin';
+
+const { data: rows } = await supabasePublic
+    .from('articles')
+    .select('*')
+    .order('pub_date', { ascending: false });
+
+const articles: Article[] = (rows ?? []) as Article[];
+---
+
+<MainLayout
+    title="Kelola Blog | GOWKAN Admin"
+    description="Kelola artikel blog"
+>
+    <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center p-6">
+        <div class="glass-nav flex items-center justify-between px-8 py-4 w-full max-w-7xl rounded-full border border-white/10 shadow-2xl backdrop-blur-md">
+            <div class="text-2xl font-extrabold tracking-tighter text-white">
+                GOW<span class="text-[#6366f1]">KAN</span>
+                <span class="ml-3 text-[10px] font-bold uppercase tracking-widest text-[#6366f1] bg-[#6366f1]/10 px-3 py-1 rounded-full border border-[#6366f1]/30">Admin</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a href="/admin" class="hover:text-[#6366f1] transition-colors">Dashboard</a>
+                <a href="/admin/gallery" class="hover:text-[#6366f1] transition-colors">Gallery</a>
+                <a href="/admin/blog" class="text-[#6366f1] font-bold">Blog</a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <span class="text-white/30 text-xs font-medium">{adminEmail}</span>
+                <button class="logout-btn px-6 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-xs font-bold uppercase tracking-widest">Logout</button>
+            </div>
+            <button class="mobile-admin-menu-btn md:hidden text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+        </div>
+    </nav>
+    <div class="mobile-admin-sidebar fixed inset-y-0 right-0 w-80 z-[60] glass-sidebar translate-x-full md:hidden flex flex-col p-8 overflow-y-auto transition-transform duration-500">
+        <div class="flex justify-between items-center mb-12">
+            <div class="text-xl font-extrabold tracking-tighter text-white">GOW<span class="text-[#6366f1]">KAN</span></div>
+            <button class="close-admin-sidebar w-10 h-10 glass-card rounded-full flex items-center justify-center text-white border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div class="flex flex-col gap-6 text-lg font-semibold mb-12 border-b border-white/5 pb-12">
+            <a href="/admin" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#6366f1]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>Dashboard</a>
+            <a href="/admin/gallery" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#a855f7]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>Kelola Gallery</a>
+            <a href="/admin/blog" class="flex items-center gap-4 text-[#6366f1]"><div class="w-8 h-8 bg-[#6366f1]/10 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>Kelola Blog</a>
+        </div>
+        <div class="mt-auto space-y-4">
+            <div class="text-white/30 text-xs font-medium">{adminEmail}</div>
+            <button class="logout-btn w-full px-6 py-4 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-sm font-bold uppercase tracking-widest">Logout</button>
+        </div>
+    </div>
+    <div class="admin-sidebar-overlay fixed inset-0 bg-dark/60 backdrop-blur-sm z-[55] opacity-0 pointer-events-none transition-opacity duration-500 md:hidden"></div>
+
+    <main class="pt-32 pb-24 px-6 min-h-screen">
+        <div class="container mx-auto max-w-7xl">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12 reveal">
+                <div>
+                    <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#6366f1]/30 bg-[#6366f1]/10 text-[#6366f1] text-[10px] font-bold uppercase tracking-widest">
+                        Articles
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">Kelola <span class="text-[#6366f1]">Blog</span></h1>
+                    <p class="text-white/40 font-medium max-w-xl">Total {articles.length} artikel. Upload file .md baru atau edit metadata artikel yang sudah ada.</p>
+                </div>
+                <a href="/admin/blog/new" class="inline-flex items-center justify-center gap-3 px-8 py-5 bg-[#6366f1] text-white rounded-full font-black text-lg shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-1 transition-all duration-500 cta-highlight cta-glow whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    Upload Artikel Baru
+                </a>
+            </div>
+
+            <div id="top-error" class="hidden rounded-3xl bg-red-500/10 border border-red-500/30 px-8 py-5 text-red-300 font-medium mb-8"></div>
+            <div id="top-success" class="hidden rounded-3xl bg-green-500/10 border border-green-500/30 px-8 py-5 text-green-300 font-medium mb-8"></div>
+
+            {articles.length === 0 ? (
+                <div class="glass-card rounded-[3rem] p-16 text-center border border-white/10 reveal">
+                    <div class="w-24 h-24 mx-auto bg-[#6366f1]/10 rounded-[2.5rem] flex items-center justify-center text-[#6366f1] mb-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <h3 class="text-2xl font-black mb-4">Belum Ada Artikel</h3>
+                    <p class="text-white/40 font-medium mb-10 max-w-md mx-auto">Upload artikel pertama Anda dalam bentuk file .md dengan frontmatter lengkap: title, description, pubDate, category, heroImage.</p>
+                    <a href="/admin/blog/new" class="inline-flex items-center gap-3 px-8 py-5 bg-[#6366f1] text-white rounded-full font-black text-lg shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                        Upload Artikel Pertama
+                    </a>
+                </div>
+            ) : (
+                <div class="glass-card rounded-[3rem] border border-white/10 overflow-hidden reveal">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[1000px]">
+                            <thead class="bg-white/[0.02] border-b border-white/5">
+                                <tr>
+                                    <th class="text-left p-6 text-xs font-black uppercase tracking-widest text-white/30">Hero</th>
+                                    <th class="text-left p-6 text-xs font-black uppercase tracking-widest text-white/30">Judul</th>
+                                    <th class="text-left p-6 text-xs font-black uppercase tracking-widest text-white/30">Kategori</th>
+                                    <th class="text-left p-6 text-xs font-black uppercase tracking-widest text-white/30">Tanggal</th>
+                                    <th class="text-left p-6 text-xs font-black uppercase tracking-widest text-white/30">Slug</th>
+                                    <th class="text-right p-6 text-xs font-black uppercase tracking-widest text-white/30">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                {articles.map((art) => (
+                                    <tr data-id={art.id} class="hover:bg-white/[0.02] transition-colors">
+                                        <td class="p-6">
+                                            <div class="w-20 h-14 rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                                                {art.hero_image_url ? (
+                                                    <img src={art.hero_image_url} alt={art.title} class="w-full h-full object-cover" loading="lazy" referrerpolicy="no-referrer" />
+                                                ) : (
+                                                    <div class="w-full h-full flex items-center justify-center text-white/20 text-xs">N/A</div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td class="p-6">
+                                            <div class="font-black text-lg text-white max-w-md truncate">{art.title}</div>
+                                            <div class="text-white/30 text-sm mt-1 truncate max-w-md" title={art.description}>{art.description}</div>
+                                        </td>
+                                        <td class="p-6">
+                                            <span class="inline-block px-4 py-1.5 rounded-full bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#6366f1] text-[10px] font-bold uppercase tracking-widest">
+                                                {art.category}
+                                            </span>
+                                        </td>
+                                        <td class="p-6">
+                                            <div class="text-white/60 text-sm font-bold">
+                                                {art.pub_date ? new Date(art.pub_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                                            </div>
+                                            {art.updated_date && (
+                                                <div class="text-white/20 text-xs mt-1">Update: {new Date(art.updated_date).toLocaleDateString('id-ID')}</div>
+                                            )}
+                                        </td>
+                                        <td class="p-6">
+                                            <code class="text-[#6366f1] text-xs font-bold bg-[#6366f1]/5 px-3 py-1.5 rounded-full border border-[#6366f1]/20">{art.slug}</code>
+                                        </td>
+                                        <td class="p-6">
+                                            <div class="flex items-center justify-end gap-3">
+                                                <a href={`/blog/${art.slug}`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 text-xs font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                                    Lihat
+                                                </a>
+                                                <a href={`/admin/blog/${art.id}/edit`} class="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#6366f1] text-xs font-bold uppercase tracking-widest hover:bg-[#6366f1]/20 transition-all">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                                                    Edit
+                                                </a>
+                                                <button data-delete-id={art.id} data-delete-name={art.title} class="delete-btn inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+        </div>
+    </main>
+</MainLayout>
+
+<script>
+    async function doLogout() { try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {} window.location.href = '/admin/login'; }
+    document.querySelectorAll('.logout-btn').forEach(b => b.addEventListener('click', doLogout));
+    const mobileBtn = document.querySelector('.mobile-admin-menu-btn');
+    const closeBtn = document.querySelector('.close-admin-sidebar');
+    const sidebar = document.querySelector('.mobile-admin-sidebar') as HTMLElement | null;
+    const overlay = document.querySelector('.admin-sidebar-overlay') as HTMLElement | null;
+    const toggleSidebar = (show: boolean) => {
+        if (!sidebar || !overlay) return;
+        if (show) { sidebar.classList.remove('translate-x-full'); sidebar.classList.add('translate-x-0'); overlay.classList.remove('opacity-0','pointer-events-none'); overlay.classList.add('opacity-100','pointer-events-auto'); document.body.style.overflow = 'hidden'; }
+        else { sidebar.classList.remove('translate-x-0'); sidebar.classList.add('translate-x-full'); overlay.classList.remove('opacity-100','pointer-events-auto'); overlay.classList.add('opacity-0','pointer-events-none'); document.body.style.overflow = ''; }
+    };
+    mobileBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeBtn?.addEventListener('click', () => toggleSidebar(false));
+    overlay?.addEventListener('click', () => toggleSidebar(false));
+
+    const topErr = document.getElementById('top-error');
+    const topSuc = document.getElementById('top-success');
+    function showTop(type: 'err'|'suc', msg: string) {
+        if (type === 'err' && topErr) { topErr.textContent = msg; topErr.classList.remove('hidden'); topSuc?.classList.add('hidden'); }
+        if (type === 'suc' && topSuc) { topSuc.textContent = msg; topSuc.classList.remove('hidden'); topErr?.classList.add('hidden'); }
+        setTimeout(() => { topErr?.classList.add('hidden'); topSuc?.classList.add('hidden'); }, 5000);
+    }
+
+    document.querySelectorAll('.delete-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-delete-id');
+            const name = btn.getAttribute('data-delete-name') || 'artikel ini';
+            if (!id) return;
+            const ok = window.confirm(`Yakin hapus artikel "${name}"? Data tidak bisa dikembalikan.`);
+            if (!ok) return;
+            try {
+                const res = await fetch(`/api/blog/${id}`, { method: 'DELETE' });
+                const data = await res.json().catch(() => ({}));
+                if (data?.success) {
+                    showTop('suc', `Artikel "${name}" berhasil dihapus.`);
+                    const row = document.querySelector(`tr[data-id="${id}"]`) as HTMLElement | null;
+                    row?.remove();
+                } else {
+                    showTop('err', data?.error || 'Gagal menghapus artikel.');
+                }
+            } catch (e: any) {
+                showTop('err', e?.message || 'Network error.');
+            }
+        });
+    });
+
+    const rv = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('active'); rv.unobserve(e.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => rv.observe(el));
+</script>

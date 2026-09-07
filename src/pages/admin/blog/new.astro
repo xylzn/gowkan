@@ -1,0 +1,603 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getCurrentUser } from '../../../lib/supabase';
+
+const user = await getCurrentUser(Astro);
+const adminEmail = user?.email ?? 'Admin';
+---
+
+<MainLayout
+    title="Upload Artikel Baru | GOWKAN Admin"
+    description="Form upload file markdown artikel baru"
+>
+    <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center p-6">
+        <div class="glass-nav flex items-center justify-between px-8 py-4 w-full max-w-6xl rounded-full border border-white/10 shadow-2xl backdrop-blur-md">
+            <div class="text-2xl font-extrabold tracking-tighter text-white">
+                GOW<span class="text-[#6366f1]">KAN</span>
+                <span class="ml-3 text-[10px] font-bold uppercase tracking-widest text-[#6366f1] bg-[#6366f1]/10 px-3 py-1 rounded-full border border-[#6366f1]/30">Admin</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a href="/admin" class="hover:text-[#6366f1] transition-colors">Dashboard</a>
+                <a href="/admin/gallery" class="hover:text-[#6366f1] transition-colors">Gallery</a>
+                <a href="/admin/blog" class="text-[#6366f1] font-bold">Blog</a>
+                <div class="h-6 w-px bg-white/10 mx-2"></div>
+                <span class="text-white/30 text-xs font-medium">{adminEmail}</span>
+                <button class="logout-btn px-6 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-xs font-bold uppercase tracking-widest">Logout</button>
+            </div>
+            <button class="mobile-admin-menu-btn md:hidden text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+        </div>
+    </nav>
+    <div class="mobile-admin-sidebar fixed inset-y-0 right-0 w-80 z-[60] glass-sidebar translate-x-full md:hidden flex flex-col p-8 overflow-y-auto transition-transform duration-500">
+        <div class="flex justify-between items-center mb-12">
+            <div class="text-xl font-extrabold tracking-tighter text-white">GOW<span class="text-[#6366f1]">KAN</span></div>
+            <button class="close-admin-sidebar w-10 h-10 glass-card rounded-full flex items-center justify-center text-white border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div class="flex flex-col gap-6 text-lg font-semibold mb-12 border-b border-white/5 pb-12">
+            <a href="/admin" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#6366f1]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>Dashboard</a>
+            <a href="/admin/gallery" class="flex items-center gap-4 hover:text-[#6366f1]"><div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-[#a855f7]"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>Kelola Gallery</a>
+            <a href="/admin/blog" class="flex items-center gap-4 text-[#6366f1]"><div class="w-8 h-8 bg-[#6366f1]/10 rounded-lg flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>Kelola Blog</a>
+        </div>
+        <div class="mt-auto space-y-4">
+            <div class="text-white/30 text-xs font-medium">{adminEmail}</div>
+            <button class="logout-btn w-full px-6 py-4 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all text-sm font-bold uppercase tracking-widest">Logout</button>
+        </div>
+    </div>
+    <div class="admin-sidebar-overlay fixed inset-0 bg-dark/60 backdrop-blur-sm z-[55] opacity-0 pointer-events-none transition-opacity duration-500 md:hidden"></div>
+
+    <main class="pt-32 pb-24 px-6 min-h-screen">
+        <div class="container mx-auto max-w-6xl">
+            <a href="/admin/blog" class="inline-flex items-center gap-3 text-white/40 hover:text-[#6366f1] transition-colors mb-8 text-sm font-bold uppercase tracking-widest reveal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                Kembali ke Daftar Artikel
+            </a>
+
+            <div class="mb-12 reveal">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#6366f1]/30 bg-[#6366f1]/10 text-[#6366f1] text-[10px] font-bold uppercase tracking-widest">
+                    Upload Artikel .md
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">Upload <span class="text-[#6366f1]">Artikel Baru</span></h1>
+                <p class="text-white/40 font-medium max-w-3xl">
+                    Drag & drop file <code class="bg-white/5 px-2 py-0.5 rounded border border-white/10 text-white/60">.md</code> dengan frontmatter lengkap:
+                    <span class="text-white font-bold"> title, description, pubDate, category, heroImage</span>.
+                    Preview artikel muncul otomatis sebelum publish.
+                </p>
+            </div>
+
+            <div id="form-error" class="hidden rounded-3xl bg-red-500/10 border border-red-500/30 px-8 py-5 text-red-300 font-medium mb-8"></div>
+            <div id="form-success" class="hidden rounded-3xl bg-green-500/10 border border-green-500/30 px-8 py-5 text-green-300 font-medium mb-8"></div>
+
+            <!-- Step 1: Upload Area -->
+            <div class="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 mb-10 reveal">
+                <div
+                    id="drop-zone"
+                    class="border-2 border-dashed border-white/10 hover:border-[#6366f1]/60 bg-white/[0.02] rounded-[2.5rem] p-14 text-center transition-all duration-300 cursor-pointer group"
+                >
+                    <input id="file-input" type="file" accept=".md,text/markdown" class="hidden" />
+                    <div class="w-24 h-24 mx-auto bg-[#6366f1]/10 rounded-[2.5rem] flex items-center justify-center text-[#6366f1] mb-8 group-hover:scale-110 transition-transform group-hover:bg-[#6366f1]/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-black mb-4 tracking-tight">
+                        <span id="dz-title">Drop file .md di sini</span>
+                    </h3>
+                    <p class="text-white/40 font-medium max-w-md mx-auto mb-8">
+                        <span id="dz-subtitle">atau klik untuk pilih file dari komputer. Pastikan file markdown memiliki frontmatter YAML lengkap.</span>
+                    </p>
+                    <div id="parsing-loader" class="hidden items-center justify-center gap-4">
+                        <div class="w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-[#6366f1] font-bold uppercase tracking-widest text-sm">Memproses file...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Edit Metadata + Preview (HIDDEN until parse success) -->
+            <div id="parsed-panel" class="hidden space-y-10">
+                <!-- Metadata Edit Form -->
+                <div class="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 reveal">
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="w-12 h-12 bg-green-500/10 rounded-[1.5rem] flex items-center justify-center text-green-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black tracking-tight">Review & Edit Metadata</h2>
+                            <p class="text-white/40 font-medium mt-1">Sesuaikan metadata di bawah sebelum publish artikel.</p>
+                        </div>
+                    </div>
+                    <form id="article-form" class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="md:col-span-2">
+                                <label for="f_title" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Judul Artikel (title) *</label>
+                                <input id="f_title" name="title" type="text" required class="glass-input w-full" />
+                            </div>
+                            <div>
+                                <label for="f_slug" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">URL Slug *</label>
+                                <input id="f_slug" name="slug" type="text" required class="glass-input w-full font-mono text-sm" />
+                                <p class="text-white/20 text-xs mt-3 font-medium">Auto-generate dari judul. Bisa diedit manual.</p>
+                            </div>
+                            <div>
+                                <label for="f_category" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Kategori (category) *</label>
+                                <input id="f_category" name="category" type="text" required class="glass-input w-full" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Hero Image (heroImage) *</label>
+                                <div class="flex items-center gap-2 mb-4 p-1 glass-card rounded-2xl w-fit border border-white/5">
+                                    <button type="button" data-tab-switch="link" data-target="hero-tab" class="active-tab px-5 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all">Link URL</button>
+                                    <button type="button" data-tab-switch="upload" data-target="hero-tab" class="px-5 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest text-white/50 hover:text-white/80 transition-all">Upload File</button>
+                                </div>
+                                <div data-tab-panel="hero-tab" data-tab-value="link">
+                                    <input id="f_hero_image_url" name="hero_image_url" type="url" required placeholder="https://images.unsplash.com/..." class="glass-input w-full" />
+                                </div>
+                                <div data-tab-panel="hero-tab" data-tab-value="upload" class="hidden">
+                                    <div id="hero-upload-box" class="border-2 border-dashed border-white/10 hover:border-[#6366f1]/60 bg-white/[0.02] rounded-[2rem] p-8 text-center transition-all cursor-pointer group">
+                                        <input id="hero-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
+                                        <div class="w-16 h-16 mx-auto bg-[#6366f1]/10 rounded-3xl flex items-center justify-center text-[#6366f1] mb-4 group-hover:scale-110 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        </div>
+                                        <div id="hero-up-status" class="text-sm font-bold text-white/70 mb-1">Klik untuk pilih gambar</div>
+                                        <div class="text-xs text-white/30 font-medium">atau drag & drop ke sini. JPG / PNG / WebP / GIF, max 5 MB</div>
+                                        <div id="hero-up-loading" class="hidden mt-4 items-center justify-center gap-3">
+                                            <div class="w-5 h-5 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin"></div>
+                                            <span class="text-xs font-bold uppercase tracking-widest text-[#6366f1]">Mengupload...</span>
+                                        </div>
+                                    </div>
+                                    <div id="hero-up-error" class="hidden mt-3 rounded-2xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm font-medium"></div>
+                                </div>
+                                <div class="mt-4">
+                                    <div id="hero-preview-wrap" class="hidden aspect-video w-full max-w-2xl rounded-[2rem] overflow-hidden border border-white/10 bg-white/5">
+                                        <img id="hero-preview" class="w-full h-full object-cover" alt="Hero preview" referrerpolicy="no-referrer" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="f_pub_date" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Tanggal Publish (pubDate) *</label>
+                                <input id="f_pub_date" name="pub_date" type="date" required class="glass-input w-full" />
+                            </div>
+                            <div>
+                                <div class="flex items-baseline justify-between mb-3">
+                                    <label class="text-sm font-black text-white/60 uppercase tracking-widest">Estimasi Waktu Baca</label>
+                                    <span id="f_read_time" class="text-sm font-bold text-[#6366f1] bg-[#6366f1]/10 px-4 py-1.5 rounded-full border border-[#6366f1]/30">-</span>
+                                </div>
+                                <div class="glass-input w-full flex items-center justify-between text-white/60 pointer-events-none select-none">
+                                    <span>Total Headings (H2 + H3)</span>
+                                    <span id="f_headings_count" class="text-white font-black">0</span>
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="f_description" class="block text-sm font-black text-white/60 uppercase tracking-widest mb-3">Deskripsi (description) *</label>
+                                <textarea id="f_description" name="description" required rows={3} class="glass-input w-full resize-none"></textarea>
+                            </div>
+                            <input type="hidden" name="content_md" id="f_content_md" />
+                            <input type="hidden" name="updated_date" id="f_updated_date" />
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
+                            <a href="/admin/blog" class="flex-1 py-5 glass-card text-center text-white/60 rounded-[2rem] font-black text-lg hover:bg-white/10 transition-all">Batal</a>
+                            <button type="submit" id="publish-btn" class="flex-[2] py-5 bg-[#6366f1] text-white rounded-[2rem] font-black text-lg shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-1 transition-all duration-500 cta-highlight cta-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                                <span id="publish-text">✨ Publish Artikel</span>
+                                <span id="publish-loading" class="hidden">Menyimpan & Mempublikasikan...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="glass-card rounded-[3rem] p-10 md:p-14 border border-white/10 reveal">
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="w-12 h-12 bg-[#a855f7]/10 rounded-[1.5rem] flex items-center justify-center text-[#a855f7]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black tracking-tight">Preview Artikel</h2>
+                            <p class="text-white/40 font-medium mt-1">Render sebagian isi artikel + headings untuk ToC.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <!-- Preview Kartu Artikel (seperti di grid /blog) -->
+                        <div class="lg:col-span-2">
+                            <div class="glass-card package-card p-8 rounded-[3rem] border border-white/10 group h-full flex flex-col">
+                                <div id="preview-hero-wrap" class="aspect-video bg-white/5 rounded-3xl mb-8 overflow-hidden border border-white/5">
+                                    <img id="preview-hero" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Hero preview" referrerpolicy="no-referrer" />
+                                </div>
+                                <div class="flex-grow px-2">
+                                    <div class="flex items-center gap-4 mb-6 flex-wrap">
+                                        <span id="preview-category" class="inline-block px-4 py-1.5 rounded-full bg-white/5 text-[#6366f1] text-[10px] font-bold uppercase tracking-[0.2em]">-</span>
+                                        <span id="preview-read-time" class="inline-block px-4 py-1.5 rounded-full bg-[#a855f7]/10 border border-[#a855f7]/30 text-[#a855f7] text-[10px] font-bold uppercase tracking-[0.2em]">-</span>
+                                        <span id="preview-date" class="text-white/30 text-[10px] font-bold uppercase tracking-widest">-</span>
+                                    </div>
+                                    <h3 id="preview-title" class="text-2xl md:text-3xl font-black mb-6 leading-tight text-white tracking-tight">Judul Artikel</h3>
+                                    <p id="preview-description" class="text-white/40 text-sm leading-relaxed mb-6 font-medium">Deskripsi artikel...</p>
+                                </div>
+                                <div class="px-2 pt-6 border-t border-white/5">
+                                    <h4 class="text-xs font-black uppercase tracking-[0.2em] text-white/30 mb-4">Preview Konten (bagian awal)</h4>
+                                    <div id="preview-html" class="prose prose-invert max-w-none prose-p:text-white/60 prose-p:text-base prose-p:mb-4 prose-headings:text-white prose-headings:font-black prose-h2:text-2xl prose-h3:text-xl prose-strong:text-white prose-blockquote:text-white/80 prose-blockquote:border-[#6366f1] text-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table of Contents Preview -->
+                        <div class="lg:col-span-1">
+                            <div class="glass-card rounded-[2.5rem] p-8 border border-white/10 h-full">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-8 h-8 bg-[#ec4899]/10 rounded-lg flex items-center justify-center text-[#ec4899]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                                    </div>
+                                    <h4 class="text-xs font-black uppercase tracking-[0.2em] text-white/30">Daftar Isi (ToC)</h4>
+                                </div>
+                                <div id="preview-toc" class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                                    <div class="text-white/20 text-sm italic">Belum ada heading yang terdeteksi.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</MainLayout>
+
+<script>
+    type ParsedArticle = {
+        slug: string; title: string; description: string; category: string;
+        pub_date: string; updated_date: string | null;
+        hero_image_url: string; content_md: string;
+    };
+    type ParseResult = {
+        parsed: ParsedArticle;
+        preview: { readTime: string; headings: Array<{depth:number;slug:string;text:string}>; renderedHtmlPreview: string };
+    };
+
+    let currentParsed: ParsedArticle | null = null;
+    let currentHeadings: Array<{depth:number;slug:string;text:string}> = [];
+
+    // Logout & sidebar
+    async function doLogout() { try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {} window.location.href = '/admin/login'; }
+    document.querySelectorAll('.logout-btn').forEach(b => b.addEventListener('click', doLogout));
+    const mobileBtn = document.querySelector('.mobile-admin-menu-btn');
+    const closeBtn = document.querySelector('.close-admin-sidebar');
+    const sidebar = document.querySelector('.mobile-admin-sidebar') as HTMLElement | null;
+    const overlay = document.querySelector('.admin-sidebar-overlay') as HTMLElement | null;
+    const toggleSidebar = (show: boolean) => {
+        if (!sidebar || !overlay) return;
+        if (show) { sidebar.classList.remove('translate-x-full'); sidebar.classList.add('translate-x-0'); overlay.classList.remove('opacity-0','pointer-events-none'); overlay.classList.add('opacity-100','pointer-events-auto'); document.body.style.overflow = 'hidden'; }
+        else { sidebar.classList.remove('translate-x-0'); sidebar.classList.add('translate-x-full'); overlay.classList.remove('opacity-100','pointer-events-auto'); overlay.classList.add('opacity-0','pointer-events-none'); document.body.style.overflow = ''; }
+    };
+    mobileBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeBtn?.addEventListener('click', () => toggleSidebar(false));
+    overlay?.addEventListener('click', () => toggleSidebar(false));
+
+    function initTabSwitchers() {
+        document.querySelectorAll<HTMLButtonElement>('[data-tab-switch]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                const value = btn.getAttribute('data-tab-switch');
+                if (!target || !value) return;
+                document.querySelectorAll(`[data-tab-panel="${target}"]`).forEach(p => {
+                    p.classList.toggle('hidden', p.getAttribute('data-tab-value') !== value);
+                });
+                document.querySelectorAll<HTMLButtonElement>(`[data-tab-switch][data-target="${target}"]`).forEach(b => {
+                    const active = b === btn;
+                    b.classList.toggle('active-tab', active);
+                    b.classList.toggle('bg-[#6366f1]', active);
+                    b.classList.toggle('text-white', active);
+                    b.classList.toggle('shadow-lg', active);
+                    b.classList.toggle('shadow-[#6366f1]/30', active);
+                    b.classList.toggle('text-white/50', !active);
+                });
+            });
+            if (btn.classList.contains('active-tab')) {
+                btn.classList.add('bg-[#6366f1]', 'text-white', 'shadow-lg', 'shadow-[#6366f1]/30');
+            }
+        });
+    }
+
+    async function handleImageUpload(args: {
+        fileInputId: string;
+        boxId: string;
+        statusId: string;
+        loadingId: string;
+        errorId: string;
+        urlInputId: string;
+        previewWrapId: string;
+        previewImgId: string;
+        context: string;
+    }) {
+        const fileInput = document.getElementById(args.fileInputId) as HTMLInputElement | null;
+        const box = document.getElementById(args.boxId);
+        const status = document.getElementById(args.statusId);
+        const loading = document.getElementById(args.loadingId);
+        const errEl = document.getElementById(args.errorId);
+        const urlInput = document.getElementById(args.urlInputId) as HTMLInputElement | null;
+        const previewWrap = document.getElementById(args.previewWrapId);
+        const previewImg = document.getElementById(args.previewImgId) as HTMLImageElement | null;
+
+        function setLoading(v: boolean) {
+            if (loading) { loading.classList.toggle('hidden', !v); loading.classList.toggle('flex', v); }
+            if (box) (box as HTMLElement).classList.toggle('opacity-60', v);
+            if (box) (box as HTMLElement).classList.toggle('pointer-events-none', v);
+        }
+        function setErr(msg: string) {
+            if (!errEl) return;
+            if (msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+            else errEl.classList.add('hidden');
+        }
+        function setStatus(t: string) { if (status) status.textContent = t; }
+        function setPreviewFromUrl(url: string) {
+            if (!previewWrap || !previewImg) return;
+            if (url && /^https?:\/\//i.test(url) || url.startsWith('blob:')) { previewImg.src = url; previewWrap.classList.remove('hidden'); }
+            else previewWrap.classList.add('hidden');
+        }
+
+        urlInput?.addEventListener('input', () => setPreviewFromUrl(urlInput.value.trim()));
+        setPreviewFromUrl(urlInput?.value || '');
+
+        box?.addEventListener('click', () => fileInput?.click());
+        ['dragenter','dragover'].forEach(ev => box?.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); box.classList.add('border-[#6366f1]','bg-[#6366f1]/10','scale-[1.01]'); }));
+        ['dragleave','drop'].forEach(ev => box?.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); box.classList.remove('border-[#6366f1]','bg-[#6366f1]/10','scale-[1.01]'); }));
+        box?.addEventListener('drop', (e) => { const f = (e as DragEvent).dataTransfer?.files?.[0]; if (f) startUpload(f); });
+        fileInput?.addEventListener('change', (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) startUpload(f); });
+
+        async function startUpload(file: File) {
+            setErr('');
+            const readerPreview = URL.createObjectURL(file);
+            setStatus(`Lokasi file dipilih: ${file.name}`);
+            setPreviewFromUrl(readerPreview);
+            try {
+                setLoading(true);
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('context', args.context);
+                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                const data = await res.json().catch(() => ({}));
+                if (data?.success && data.url) {
+                    URL.revokeObjectURL(readerPreview);
+                    if (urlInput) {
+                        urlInput.value = String(data.url).trim();
+                        urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    setStatus(`Upload sukses: ${file.name}`);
+                    setPreviewFromUrl(data.url);
+                } else {
+                    setErr(data?.error || `Upload gagal untuk file "${file.name}".`);
+                    setStatus('Gagal upload — pilih file lain');
+                }
+            } catch (e: any) {
+                setErr(e?.message || 'Network error saat upload gambar.');
+                setStatus('Gagal upload — coba lagi');
+            } finally {
+                setLoading(false);
+                if (fileInput) fileInput.value = '';
+            }
+        }
+    }
+
+    initTabSwitchers();
+    handleImageUpload({
+        fileInputId: 'hero-file',
+        boxId: 'hero-upload-box',
+        statusId: 'hero-up-status',
+        loadingId: 'hero-up-loading',
+        errorId: 'hero-up-error',
+        urlInputId: 'f_hero_image_url',
+        previewWrapId: 'hero-preview-wrap',
+        previewImgId: 'hero-preview',
+        context: 'blog',
+    });
+
+    // Form refs
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+    const dzTitle = document.getElementById('dz-title');
+    const dzSubtitle = document.getElementById('dz-subtitle');
+    const parsingLoader = document.getElementById('parsing-loader') as HTMLElement | null;
+    const parsedPanel = document.getElementById('parsed-panel');
+    const formErr = document.getElementById('form-error');
+    const formSuc = document.getElementById('form-success');
+    const artForm = document.getElementById('article-form') as HTMLFormElement | null;
+    const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+    const publishText = document.getElementById('publish-text');
+    const publishLoading = document.getElementById('publish-loading');
+
+    function showMsg(type: 'err'|'suc', msg: string) {
+        if (type === 'err' && formErr) { formErr.textContent = msg; formErr.classList.remove('hidden'); formSuc?.classList.add('hidden'); }
+        if (type === 'suc' && formSuc) { formSuc.textContent = msg; formSuc.classList.remove('hidden'); formErr?.classList.add('hidden'); }
+        setTimeout(() => { formErr?.classList.add('hidden'); formSuc?.classList.add('hidden'); }, 7000);
+    }
+
+    function setLoading(loading: boolean) {
+        if (!dzTitle || !dzSubtitle || !parsingLoader) return;
+        if (loading) {
+            parsingLoader.style.display = 'flex';
+            dzTitle.textContent = 'Memproses file...';
+            dzSubtitle.textContent = 'Sedang parse frontmatter & isi markdown. Harap tunggu.';
+            dropZone?.classList.add('pointer-events-none', 'opacity-60');
+        } else {
+            parsingLoader.style.display = 'none';
+            dzTitle.textContent = 'Drop file .md di sini';
+            dzSubtitle.textContent = 'atau klik untuk pilih file dari komputer. Pastikan file markdown memiliki frontmatter YAML lengkap.';
+            dropZone?.classList.remove('pointer-events-none', 'opacity-60');
+        }
+    }
+
+    function fillFormAndPreview(r: ParseResult) {
+        currentParsed = { ...r.parsed };
+        currentHeadings = r.preview.headings || [];
+        parsedPanel?.classList.remove('hidden');
+
+        // Form inputs
+        (document.getElementById('f_title') as HTMLInputElement).value = r.parsed.title || '';
+        (document.getElementById('f_slug') as HTMLInputElement).value = r.parsed.slug || '';
+        (document.getElementById('f_category') as HTMLInputElement).value = r.parsed.category || '';
+        (document.getElementById('f_hero_image_url') as HTMLInputElement).value = r.parsed.hero_image_url || '';
+        (document.getElementById('f_pub_date') as HTMLInputElement).value = r.parsed.pub_date || '';
+        (document.getElementById('f_description') as HTMLTextAreaElement).value = r.parsed.description || '';
+        (document.getElementById('f_content_md') as HTMLInputElement).value = r.parsed.content_md || '';
+
+        // Info chips
+        document.getElementById('f_read_time')!.textContent = r.preview.readTime || '-';
+        document.getElementById('f_headings_count')!.textContent = String(currentHeadings.length);
+
+        // Preview card
+        const hero = document.getElementById('preview-hero') as HTMLImageElement;
+        const heroWrap = document.getElementById('preview-hero-wrap') as HTMLElement;
+        if (r.parsed.hero_image_url) {
+            hero.src = r.parsed.hero_image_url;
+            heroWrap?.classList.remove('hidden');
+        } else {
+            heroWrap?.classList.add('hidden');
+        }
+        document.getElementById('preview-category')!.textContent = r.parsed.category || '-';
+        document.getElementById('preview-read-time')!.textContent = r.preview.readTime || '-';
+        const pd = r.parsed.pub_date ? new Date(r.parsed.pub_date) : null;
+        document.getElementById('preview-date')!.textContent = pd ? pd.toLocaleDateString('id-ID', { year:'numeric', month:'short', day:'numeric' }) : '-';
+        document.getElementById('preview-title')!.textContent = r.parsed.title || 'Judul Artikel';
+        document.getElementById('preview-description')!.textContent = r.parsed.description || 'Deskripsi artikel...';
+
+        // Preview HTML (partial)
+        const prevHtml = document.getElementById('preview-html') as HTMLElement;
+        if (prevHtml) prevHtml.innerHTML = r.preview.renderedHtmlPreview || '<div class="text-white/30 italic">(tidak ada konten preview)</div>';
+
+        // ToC preview
+        const tocEl = document.getElementById('preview-toc') as HTMLElement;
+        if (tocEl) {
+            if (currentHeadings.length === 0) {
+                tocEl.innerHTML = '<div class="text-white/20 text-sm italic">Belum ada heading yang terdeteksi.</div>';
+            } else {
+                tocEl.innerHTML = '';
+                currentHeadings.forEach(h => {
+                    const a = document.createElement('a');
+                    a.href = `#${h.slug}`;
+                    a.className = `toc-link block ${h.depth === 3 ? 'pl-6 text-sm' : 'text-base'} text-white/60 hover:text-[#6366f1] font-medium py-2 border-b border-white/5 last:border-0 transition-colors`;
+                    a.innerHTML = `<span class="mr-2 text-white/20 font-bold">${h.depth}.</span>${h.text}`;
+                    a.addEventListener('click', (e) => e.preventDefault());
+                    tocEl.appendChild(a);
+                });
+            }
+        }
+
+        // Live sync: title <-> preview title, desc, etc.
+        bindLiveEdits();
+
+        // Scroll ke panel
+        setTimeout(() => parsedPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    function bindLiveEdits() {
+        const title = document.getElementById('f_title') as HTMLInputElement;
+        const desc = document.getElementById('f_description') as HTMLTextAreaElement;
+        const cat = document.getElementById('f_category') as HTMLInputElement;
+        const hero = document.getElementById('f_hero_image_url') as HTMLInputElement;
+        const pt = document.getElementById('preview-title');
+        const pd = document.getElementById('preview-description');
+        const pc = document.getElementById('preview-category');
+        const phero = document.getElementById('preview-hero') as HTMLImageElement;
+        title?.addEventListener('input', () => { if (pt) pt.textContent = title.value || 'Judul Artikel'; });
+        desc?.addEventListener('input', () => { if (pd) pd.textContent = desc.value || 'Deskripsi artikel...'; });
+        cat?.addEventListener('input', () => { if (pc) pc.textContent = cat.value || '-'; });
+        hero?.addEventListener('input', () => {
+            if (phero && hero.value.trim()) {
+                if (/^https?:\/\//i.test(hero.value.trim())) phero.src = hero.value.trim();
+            }
+        });
+    }
+
+    async function processFile(file: File) {
+        showMsg('err', '');
+        setLoading(true);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await fetch('/api/blog/parse-md', { method: 'POST', body: fd });
+            const data = (await res.json().catch(() => ({}))) as (ParseResult & { success: boolean; error?: string });
+            if (data?.success && data.parsed) {
+                fillFormAndPreview(data as ParseResult);
+                showMsg('suc', `File "${file.name}" berhasil di-parse. Silakan review metadata sebelum publish.`);
+            } else {
+                showMsg('err', data?.error || 'Parse gagal. Pastikan file .md memiliki frontmatter lengkap (title, description, pubDate, category, heroImage).');
+                parsedPanel?.classList.add('hidden');
+            }
+        } catch (e: any) {
+            showMsg('err', e?.message || 'Network error saat parse.');
+            parsedPanel?.classList.add('hidden');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Click drop zone -> open file dialog
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', (e) => {
+        const f = (e.target as HTMLInputElement).files?.[0];
+        if (f) processFile(f);
+    });
+
+    // Drag & drop
+    ['dragenter','dragover'].forEach(ev => {
+        dropZone?.addEventListener(ev, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            dropZone.classList.add('border-[#6366f1]', 'bg-[#6366f1]/10', 'scale-[1.01]');
+        });
+    });
+    ['dragleave','drop'].forEach(ev => {
+        dropZone?.addEventListener(ev, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            dropZone.classList.remove('border-[#6366f1]', 'bg-[#6366f1]/10', 'scale-[1.01]');
+        });
+    });
+    dropZone?.addEventListener('drop', (e) => {
+        const dt = (e as DragEvent).dataTransfer;
+        const file = dt?.files?.[0];
+        if (file) processFile(file);
+    });
+
+    // Publish
+    artForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentParsed) { showMsg('err', 'Belum ada file yang di-parse. Upload file .md terlebih dahulu.'); return; }
+        if (publishBtn && publishText && publishLoading) {
+            publishBtn.disabled = true;
+            publishText.classList.add('hidden');
+            publishLoading.classList.remove('hidden');
+        }
+        try {
+            const fd = new FormData(artForm);
+            const payload: Record<string, any> = { ...currentParsed };
+            fd.forEach((v, k) => {
+                if (typeof v === 'string') {
+                    if (k === 'content_md') payload.content_md = currentParsed.content_md; // jangan timpa dengan form value
+                    else payload[k] = v.trim();
+                }
+            });
+            payload.updated_date = null;
+
+            const res = await fetch('/api/blog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (data?.success) {
+                showMsg('suc', 'Artikel berhasil dipublikasikan! Membuka daftar artikel...');
+                setTimeout(() => { window.location.href = '/admin/blog'; }, 1200);
+            } else {
+                showMsg('err', data?.error || 'Gagal publish artikel.');
+            }
+        } catch (err: any) {
+            showMsg('err', err?.message || 'Network error.');
+        } finally {
+            if (publishBtn && publishText && publishLoading) {
+                publishBtn.disabled = false;
+                publishText.classList.remove('hidden');
+                publishLoading.classList.add('hidden');
+            }
+        }
+    });
+
+    // Reveal observer
+    const rv = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('active'); rv.unobserve(e.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => rv.observe(el));
+</script>
