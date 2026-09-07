@@ -39,6 +39,12 @@ const breadcrumbItems = [
     title={`${article.title} | Gowkan Blog`}
     description={article.description}
     image={article.hero_image_url}
+    imageAlt={article.title}
+    keywords={[article.category, 'gowkan blog', 'artikel website', 'tips bikin website', article.title]}
+    ogType="article"
+    articlePublishedTime={article.pub_date}
+    articleModifiedTime={article.updated_date ?? undefined}
+    articleTags={[article.category, 'Blog Gowkan', 'Artikel Website', 'Tips & Tutorial']}
 >
 	<Navbar />
 

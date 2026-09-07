@@ -6,15 +6,53 @@ interface Props {
 	title?: string;
 	description?: string;
 	image?: string;
+	imageAlt?: string;
+	imageWidth?: number;
+	imageHeight?: number;
+	keywords?: string[];
+	ogType?: 'website' | 'article';
+	articlePublishedTime?: Date | string;
+	articleModifiedTime?: Date | string;
+	articleAuthor?: string;
+	articleTags?: string[];
 	canonicalURL?: URL;
 }
 
 const {
 	title = `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
 	description = SITE_CONFIG.description,
-	image = '/og-image.jpg',
-	canonicalURL = new URL(Astro.url.pathname, Astro.site),
+	image = SITE_CONFIG.seo.defaultOgImage,
+	imageAlt = SITE_CONFIG.seo.ogImageAlt,
+	imageWidth = SITE_CONFIG.seo.ogImageWidth,
+	imageHeight = SITE_CONFIG.seo.ogImageHeight,
+	keywords = ['website', 'jasa pembuatan website', 'gowkan', 'web design', 'landing page', 'company profile'],
+	ogType = 'website',
+	articlePublishedTime,
+	articleModifiedTime,
+	articleAuthor = `${SITE_CONFIG.name} Team`,
+	articleTags,
+	canonicalURL = new URL(Astro.url.pathname, Astro.site || SITE_CONFIG.siteUrl),
 } = Astro.props;
+
+const baseOrigin = Astro.site?.origin || SITE_CONFIG.siteUrl;
+function toAbsoluteUrl(pathOrUrl: string): string {
+	if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+	try { return new URL(pathOrUrl, baseOrigin).toString(); }
+	catch { return new URL(pathOrUrl, Astro.url.origin).toString(); }
+}
+
+const imageAbs = toAbsoluteUrl(image);
+const ogUrl = canonicalURL.toString();
+const keywordsStr = Array.isArray(keywords) ? keywords.join(', ') : String(keywords ?? '');
+
+function toISO(date?: Date | string): string | undefined {
+	if (!date) return undefined;
+	const d = typeof date === 'string' ? new Date(date) : date;
+	return isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+const pubTimeISO = toISO(articlePublishedTime);
+const modTimeISO = toISO(articleModifiedTime);
 ---
 
 <!doctype html>
@@ -23,8 +61,18 @@ const {
 		<!-- Global Metadata -->
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content={SITE_CONFIG.themeColor} />
+
+		<!-- Favicons (letakkan file di /public) -->
+		<link rel="icon" type="image/svg+xml" href={SITE_CONFIG.favicon.svg} />
+		<link rel="icon" type="image/x-icon" href={SITE_CONFIG.favicon.ico} />
+		<link rel="icon" type="image/png" sizes="16x16" href={SITE_CONFIG.favicon.png16} />
+		<link rel="icon" type="image/png" sizes="32x32" href={SITE_CONFIG.favicon.png32} />
+		<link rel="apple-touch-icon" sizes="180x180" href={SITE_CONFIG.favicon.appleTouch} />
+		<link rel="mask-icon" href={SITE_CONFIG.favicon.safariPinnedTab} color={SITE_CONFIG.themeColor} />
+		<link rel="manifest" href={SITE_CONFIG.favicon.webmanifest} />
+		<meta name="msapplication-TileColor" content={SITE_CONFIG.themeColor} />
 
 		<!-- Canonical URL -->
 		<link rel="canonical" href={canonicalURL} />
@@ -33,20 +81,43 @@ const {
 		<title>{title}</title>
 		<meta name="title" content={title} />
 		<meta name="description" content={description} />
+		{keywordsStr && <meta name="keywords" content={keywordsStr} />}
+		<meta name="author" content={SITE_CONFIG.name} />
+		<meta name="robots" content="index, follow" />
+		<meta name="language" content="Indonesian" />
 
 		<!-- Open Graph / Facebook -->
-		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:site_name" content={SITE_CONFIG.name} />
+		<meta property="og:locale" content={SITE_CONFIG.locale} />
+		<meta property="og:url" content={ogUrl} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content={new URL(image, Astro.url)} />
+		<meta property="og:image" content={imageAbs} />
+		<meta property="og:image:secure_url" content={imageAbs} />
+		<meta property="og:image:alt" content={imageAlt} />
+		<meta property="og:image:width" content={String(imageWidth)} />
+		<meta property="og:image:height" content={String(imageHeight)} />
+		{ogType === 'website' && <meta property="og:see_also" content={SITE_CONFIG.social.instagram} />}
+		{ogType === 'website' && <meta property="og:see_also" content={SITE_CONFIG.social.twitter} />}
+		{ogType === 'website' && <meta property="og:see_also" content={SITE_CONFIG.social.facebook} />}
+
+		<!-- Article-specific OG -->
+		{ogType === 'article' && pubTimeISO && <meta property="article:published_time" content={pubTimeISO} />}
+		{ogType === 'article' && modTimeISO && <meta property="article:modified_time" content={modTimeISO} />}
+		{ogType === 'article' && articleAuthor && <meta property="article:author" content={articleAuthor} />}
+		{ogType === 'article' && articleTags && articleTags.map((t) => <meta property="article:tag" content={t} />)}
 
 		<!-- Twitter -->
-		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content={Astro.url} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content={SITE_CONFIG.seo.twitterSite} />
+		<meta name="twitter:creator" content={SITE_CONFIG.seo.twitterCreator} />
+		<meta name="twitter:domain" content={new URL(baseOrigin).hostname} />
+		<meta property="twitter:url" content={ogUrl} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
-		<meta property="twitter:image" content={new URL(image, Astro.url)} />
+		<meta property="twitter:image" content={imageAbs} />
+		<meta property="twitter:image:alt" content={imageAlt} />
 
 		<!-- Fonts -->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
